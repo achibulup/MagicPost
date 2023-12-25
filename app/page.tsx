@@ -101,10 +101,12 @@ export default function Home() {
   //   </div>
   // </main>
   return (
-    <main>
-      <p>Magic Post</p>
-      <Link href="/login"> Login </Link>
-      <Link href="/signup"> Signup </Link>
+    <main className="flex min-h-screen flex-col lg:flex-row items-center justify-between p-24 bg-white">
+      <div><p className="text-[44px]">Magic Post</p></div>
+      <div>
+        <Link href="/login"> Login </Link>
+        <Link href="/signup"> Signup </Link>
+      </div>
     </main>     
   )
 }
