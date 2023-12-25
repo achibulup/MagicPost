@@ -1,9 +1,8 @@
 import { VercelPoolClient, db } from "@vercel/postgres"
-import * as actions from "../database/actions";
+import * as actions from "../lib/database/actions";
 import dotenv from "dotenv";
 
-import data = require("../database/placeholder-data.json");
-import e = require("express");
+import data from "../lib/database/placeholder-data.json";
 
 async function createCustomerTable(client: VercelPoolClient) {
   await client.sql`
