@@ -4,27 +4,27 @@ import dotenv from "dotenv";
 
 import data from "../lib/database/placeholder-data.json";
 
-async function createCustomerTable(client: VercelPoolClient) {
-  await client.sql`
-    DROP TABLE IF EXISTS customers CASCADE;
-  `;
-  return client.sql`
-    CREATE TABLE IF NOT EXISTS customers (
-      id SERIAl PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password VARCHAR(255) NOT NULL,
-      phone VARCHAR(255) NOT NULL
-    );
-  `;
-}
+// async function createCustomerTable(client: VercelPoolClient) {
+//   await client.sql`
+//     DROP TABLE IF EXISTS customers CASCADE;
+//   `;
+//   return client.sql`
+//     CREATE TABLE IF NOT EXISTS customers (
+//       id SERIAl PRIMARY KEY,
+//       name VARCHAR(255) NOT NULL,
+//       email VARCHAR(255) UNIQUE NOT NULL,
+//       password VARCHAR(255) NOT NULL,
+//       phone VARCHAR(255) NOT NULL
+//     );
+//   `;
+// }
 
-async function seedCustomerTable(client: VercelPoolClient) {
-  await Promise.all(data.customers.map(async (customer) => {
-    return actions.createCustomer(customer);
-  }));
-  console.log("Finished seeding customers");
-}
+// async function seedCustomerTable(client: VercelPoolClient) {
+//   await Promise.all(data.customers.map(async (customer) => {
+//     return actions.createCustomer(customer);
+//   }));
+//   console.log("Finished seeding customers");
+// }
 
 async function createTransitHubTable(client: VercelPoolClient) {
   await client.sql`
@@ -72,12 +72,12 @@ async function seedPickupPointTable(client: VercelPoolClient) {
   console.log("Finished seeding pickup points");
 }
 
-async function createEmployeeTable(client: VercelPoolClient) {
+async function createAccountTable(client: VercelPoolClient) {
   await client.sql`
-    DROP TABLE IF EXISTS employees CASCADE;
+    DROP TABLE IF EXISTS accounts CASCADE;
   `;
   return client.sql`
-    CREATE TABLE IF NOT EXISTS employees (
+    CREATE TABLE IF NOT EXISTS accounts (
       id SERIAl PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
@@ -91,14 +91,14 @@ async function createEmployeeTable(client: VercelPoolClient) {
   `;
 }
 
-async function seedEmployeeTable(client: VercelPoolClient) {
-  await Promise.all(data.employees.map(async (employee) => {
-    const formatEmployee = {
-      ...employee,
-      pickupPoint: employee.pickupPoint && (await actions.getPickupPointByName(employee.pickupPoint)).id,
-      transitHub: employee.transitHub && (await actions.getTransitHubByName(employee.transitHub)).id,
+async function seedAccountTable(client: VercelPoolClient) {
+  await Promise.all(data.accounts.map(async (account) => {
+    const formatAccount = {
+      ...account,
+      pickupPoint: account.pickupPoint && (await actions.getPickupPointByName(account.pickupPoint)).id,
+      transitHub: account.transitHub && (await actions.getTransitHubByName(account.transitHub)).id,
     };
-    return actions.createEmployee(formatEmployee as EmployeeData);
+    return actions.createAccount(formatAccount as AccountData);
   }));
 }
 
@@ -115,7 +115,7 @@ async function createPackageTable(client: VercelPoolClient) {
       pickup_to INTEGER NOT NULL REFERENCES pickup_points(id),
       transit_date DATE,
       arrival_date DATE,
-      shipper INTEGER REFERENCES employees(id),
+      shipper INTEGER REFERENCES accounts(id),
       status VARCHAR(255) NOT NULL DEFAULT 'pending'
     );
   `;
@@ -127,7 +127,7 @@ async function seedPackageTable(client: VercelPoolClient) {
       ...pk, 
       pickupFrom: (await actions.getPickupPointByName(pk.pickupFrom)).id,
       pickupTo: (await actions.getPickupPointByName(pk.pickupTo)).id,
-      shipper: (await actions.getEmployeeByEmail(pk.shipper)).id,
+      shipper: (await actions.getAccountByEmail(pk.shipper)).id,
       transitDate: pk.transitDate && new Date(pk.transitDate),
       arrivalDate: pk.arrivalDate && new Date(pk.arrivalDate),
     };
@@ -150,7 +150,7 @@ async function createOrderTable(client: VercelPoolClient) {
       pickup_to INTEGER NOT NULL REFERENCES pickup_points(id),
       send_date DATE,
       arrival_date DATE,
-      shipper INTEGER REFERENCES employees(id),
+      shipper INTEGER REFERENCES accounts(id),
       status VARCHAR(255) NOT NULL DEFAULT 'pending'
     );
   `;
@@ -162,7 +162,7 @@ async function seedOrderTable(client: VercelPoolClient) {
       ...order, 
       pickupFrom: (await actions.getPickupPointByName(order.pickupFrom)).id,
       pickupTo: (await actions.getPickupPointByName(order.pickupTo)).id,
-      shipper: order.shipper && (await actions.getEmployeeByEmail(order.shipper)).id,
+      shipper: order.shipper && (await actions.getAccountByEmail(order.shipper)).id,
       sendDate: order.sendDate && new Date(order.sendDate),
       arrivalDate: order.arrivalDate && new Date(order.arrivalDate),
     };
@@ -175,20 +175,18 @@ async function main() {
   const client = await db.connect();
 
   await Promise.all([
-    createCustomerTable(client),
     createTransitHubTable(client),
     createPickupPointTable(client),
-    createEmployeeTable(client),
+    createAccountTable(client),
     createPackageTable(client),
     createOrderTable(client),
   ]);
 
   console.log("Finished creating tables");
 
-  await seedCustomerTable(client);
   await seedTransitHubTable(client);
   await seedPickupPointTable(client);
-  await seedEmployeeTable(client);
+  await seedAccountTable(client);
   await seedPackageTable(client);
   await seedOrderTable(client);
 
@@ -197,4 +195,4 @@ async function main() {
   client.release();
 }
 
-main();
+export default main;
