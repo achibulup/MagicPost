@@ -17,34 +17,34 @@ export async function createCustomer({ name, email, password, phone }: CustomerD
   `;
 }
 
-export async function getCustomerById(id: number) {
-  return sql<Customer>`
-    SELECT * FROM customers WHERE id = ${id}
-  `.then((res) => res.rows[0]);
-}
+// export async function getCustomerById(id: number) {
+//   return sql<Customer>`
+//     SELECT * FROM customers WHERE id = ${id}
+//   `.then((res) => res.rows[0]);
+// }
 
-export async function getCustomerByEmail(email: string) {
-  return sql<Customer>`
-    SELECT * FROM customers WHERE email = ${email}
-  `.then((res) => res.rows[0]);
-}
+// export async function getCustomerByEmail(email: string) {
+//   return sql<Customer>`
+//     SELECT * FROM customers WHERE email = ${email}
+//   `.then((res) => res.rows[0]);
+// }
 
-export async function changeCustomerPassword(id: number, newPassword: string) {
-  const hashedPassword = await hashPassword(newPassword);
-  return sql`
-    UPDATE customers
-    SET password = ${hashedPassword}
-    WHERE id = ${id}
-  `;
-}
+// export async function changeCustomerPassword(id: number, newPassword: string) {
+//   const hashedPassword = await hashPassword(newPassword);
+//   return sql`
+//     UPDATE customers
+//     SET password = ${hashedPassword}
+//     WHERE id = ${id}
+//   `;
+// }
 
-export async function deleteCustomer(id: number) {
-  return sql`
-    DELETE FROM customers WHERE id = ${id}
-  `;
-}
+// export async function deleteCustomer(id: number) {
+//   return sql`
+//     DELETE FROM customers WHERE id = ${id}
+//   `;
+// }
 
-export async function createEmployee({
+export async function createAccount({
   name,
   email,
   password,
@@ -52,29 +52,29 @@ export async function createEmployee({
   role,
   pickupPoint,
   transitHub,
-}: EmployeeData) {
+}: AccountData) {
   return sql`
-    INSERT INTO employees (name, email, password, phone, role, pickup_point, transit_hub)
+    INSERT INTO accounts (name, email, password, phone, role, pickup_point, transit_hub)
     VALUES (${name}, ${email}, ${password}, ${phone}, ${role}, ${pickupPoint}, ${transitHub})
   `;
 }
 
-export async function getEmployeeById(id: number) {
-  return sql<Employee>`
-    SELECT * FROM employees WHERE id = ${id}
+export async function getAccountById(id: number) {
+  return sql<Account>`
+    SELECT * FROM accounts WHERE id = ${id}
   `.then((res) => res.rows[0]);
 }
 
-export async function getEmployeeByEmail(email: string) {
-  return sql<Employee>`
-    SELECT * FROM employees WHERE email = ${email}
+export async function getAccountByEmail(email: string) {
+  return sql<Account>`
+    SELECT * FROM accounts WHERE email = ${email}
   `.then((res) => res.rows[0]);
 }
 
-export async function changeEmployeePassword(id: number, newPassword: string) {
+export async function changeAccountPassword(id: number, newPassword: string) {
   const hashedPassword = await hashPassword(newPassword);
   return sql`
-    UPDATE employees
+    UPDATE accounts
     SET password = ${hashedPassword}
     WHERE id = ${id}
   `;
@@ -223,7 +223,7 @@ export async function createTransitHub({ name, location }: TransitHubData) {
   return sql`
     INSERT INTO transit_hubs (name, location)
     VALUES (${name}, ${location})
-  `;
+  `.then(async () => console.log(await getTransitHubByName(name)));
 }
 
 export async function getTransitHubById(id: number) {
@@ -243,7 +243,7 @@ export async function createPickupPoint({ name, location, hub }: PickupPointData
   return sql`
     INSERT INTO pickup_points (name, location, hub)
     VALUES (${name}, ${location}, ${hub})
-  `;
+  `.then(async () => console.log((await sql`SELECT * FROM pickup_points`).rows));
 }
 
 export async function getPickupPointById(id: number) {

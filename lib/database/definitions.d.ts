@@ -1,18 +1,10 @@
-type Customer = {
-  id: number;
-  email: string;
-  password: string;
-  name: string;
-  phone: string;
-};
-
-type Employee = {
+type Account = {
   id: number;
   email: string;
   name: string;
   password: string;
   phone: string;
-  role: "staff" | "manager" | "shipper";
+  role: "staff" | "manager" | "shipper" | "customer";
   status: "active" | "inactive";
   pickupPoint: number | null;
   transitHub: number | null;
@@ -68,7 +60,7 @@ type CustomerData = {
   phone: string;
 };
 
-type EmployeeData = {
+type AccountData = {
   name: string;
   email: string;
   password: string;
@@ -92,6 +84,14 @@ type EmployeeData = {
   role: "shipper";
   pickupPoint: null;
   transitHub: null;
+} | {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  role: "customer";
+  pickupPoint: undefined;
+  transitHub: undefined;
 };
 
 type OrderData = {
