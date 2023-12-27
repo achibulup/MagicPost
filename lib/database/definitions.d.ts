@@ -110,6 +110,8 @@ type OrderData = {
 };
 
 type PackageData = {
+  quantity?: number;
+  weight?: number;
   pickupFrom: number;
   pickupTo: number;
   shipper: number | null;
