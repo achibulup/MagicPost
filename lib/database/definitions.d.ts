@@ -19,6 +19,7 @@ type Order = {
   pickupFrom: number;
   pickupTo: number;
   package: number | null;
+  charge: number;
   sendDate: Date;
   arrivalDate: Date | null;
   shipper: number | null;
@@ -90,8 +91,8 @@ type AccountData = {
   password: string;
   phone: string;
   role: "customer";
-  pickupPoint: undefined;
-  transitHub: undefined;
+  pickupPoint?: null;
+  transitHub?: null;
 };
 
 type OrderData = {
@@ -102,6 +103,7 @@ type OrderData = {
   pickupFrom: number;
   pickupTo: number;
   sendDate: Date;
+  charge: number;
   shipper?: number | null;
   arrivalDate?: Date | null;
   status?: "pending" | "delivering" | "delivered" | "cancelled";
@@ -126,3 +128,5 @@ type PickupPointData = {
   location: string;
   hub: number;
 };
+
+export type { Account, Order, Package, PickupPoint, TransitHub, CustomerData, AccountData, OrderData, PackageData, TransitHubData, PickupPointData };
