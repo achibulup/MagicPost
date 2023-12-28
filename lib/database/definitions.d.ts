@@ -4,11 +4,22 @@ type Account = {
   name: string;
   password: string;
   phone: string;
-  role: "staff" | "manager" | "shipper" | "customer";
   status: "active" | "inactive";
-  pickupPoint: number | null;
-  transitHub: number | null;
-};
+} & (
+  {
+    role: "staff" | "manager" | "shipper";
+    pickupPoint: number;
+    transitHub?: null;
+  } | {
+    role: "staff" | "manager";
+    pickupPoint?: null;
+    transitHub: number;
+  } | {
+    role: "customer";
+    pickupPoint?: null;
+    transitHub?: null;
+  }
+);
 
 type Order = { 
   id: number;
@@ -18,23 +29,11 @@ type Order = {
   receiverAddress: string;
   pickupFrom: number;
   pickupTo: number;
-  package: number | null;
   charge: number;
+  status: number; // -1 mean cancelled, from 2 to 10: odd number mean in transit, even number mean in pickup point
   sendDate: Date;
   arrivalDate: Date | null;
   shipper: number | null;
-  status: "pending" | "delivering1" | "delivering2" | "delivered" | "cancelled";
-};
-
-type Package = {
-  id: number;
-  quantity: number;
-  weight: number;
-  pickupFrom: number;
-  pickupTo: number;
-  transitDate: Date | null;
-  arrivalDate: Date | null;
-  status: "pending" | "delivering1" | "delivering2" | "delivering3" | "delivered";
 };
 
 type PickupPoint = {
@@ -61,38 +60,26 @@ type CustomerData = {
 };
 
 type AccountData = {
-  name: string;
   email: string;
+  name: string;
   password: string;
   phone: string;
-  role: "manager" | "staff";
-  pickupPoint: number;
-  transitHub: null;
-} | {
-  name: string;
-  email: string;
-  password: string;
-  phone: string;
-  role: "manager" | "staff";
-  pickupPoint: null;
-  transitHub: number;
-} | {
-  name: string;
-  email: string;
-  password: string;
-  phone: string;
-  role: "shipper";
-  pickupPoint: null;
-  transitHub: null;
-} | {
-  name: string;
-  email: string;
-  password: string;
-  phone: string;
-  role: "customer";
-  pickupPoint?: null;
-  transitHub?: null;
-};
+  status?: "active" | "inactive";
+} & (
+  {
+    role: "staff" | "manager" | "shipper";
+    pickupPoint: number;
+    transitHub?: null;
+  } | {
+    role: "staff" | "manager";
+    pickupPoint?: null;
+    transitHub: number;
+  } | {
+    role: "customer";
+    pickupPoint?: null;
+    transitHub?: null;
+  }
+);
 
 type OrderData = {
   sender: number;
@@ -105,18 +92,18 @@ type OrderData = {
   charge: number;
   shipper?: number | null;
   arrivalDate?: Date | null;
-  status?: "pending" | "delivering" | "delivered" | "cancelled";
+  status?: number;
 };
 
-type PackageData = {
-  quantity?: number;
-  weight?: number;
-  pickupFrom: number;
-  pickupTo: number;
-  transitDate?: Date | null;
-  arrivalDate?: Date | null;
-  status?: "pending" | "delivering1" | "delivering2" | "delivering3" | "delivered";
-}
+// type PackageData = {
+//   quantity?: number;
+//   weight?: number;
+//   pickupFrom: number;
+//   pickupTo: number;
+//   transitDate?: Date | null;
+//   arrivalDate?: Date | null;
+//   status?: "pending" | "delivering1" | "delivering2" | "delivering3" | "delivered";
+// }
 
 type TransitHubData = {
   name: string;
@@ -129,4 +116,4 @@ type PickupPointData = {
   hub: number;
 };
 
-export type { Account, Order, Package, PickupPoint, TransitHub, CustomerData, AccountData, OrderData, PackageData, TransitHubData, PickupPointData };
+export type { Account, Order, PickupPoint, TransitHub, CustomerData, AccountData, OrderData, TransitHubData, PickupPointData };
