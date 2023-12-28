@@ -1,4 +1,4 @@
-import Bar from './component/bars'
+import Bar from '../ui/bars'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
