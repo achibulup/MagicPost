@@ -16,17 +16,17 @@ type OrderPostData = {
 
 export async function GET(req: Request) {
   const user = await getUserProfile();
-  if (!user || user.role !== 'staff' || user.pickupPoint === null) {
+  if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
   const url = new URL(req.url!);
-  const isPending = url.searchParams.get('pending');
+  const status = url.searchParams.get('status');
   const fromTo = url.searchParams.get('fromTo') ?? 'both';
   const orders = await actions.getOrders({
-    status: isPending ? (isPending === 'true' ? 'pending' : 'delivered') : undefined,
+    status: status ? status : undefined,
     pickup: fromTo === 'both' ? user.pickupPoint : undefined,
     pickupFrom: fromTo === 'from' ? user.pickupPoint : undefined,
     pickupTo: fromTo === 'to' ? user.pickupPoint : undefined
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const user = await getUserProfile();
-  if (!user || user.role !== 'staff' || user.pickupPoint === null) {
+  if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }

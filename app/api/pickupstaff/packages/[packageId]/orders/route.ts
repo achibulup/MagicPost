@@ -1,15 +1,15 @@
-import { getUserProfile } from "@/lib/auth/session";
-import * as actions from "@/lib/database/actions";
-import { NextApiRequest, NextApiResponse } from "next";
-import { notFound } from "next/navigation";
-import type { Order } from "@/lib/database/definitions";
-import { NextResponse } from "next/server";
-import { canAddOrder, isPackageManipulable } from "../../../utils";
+import { getUserProfile } from '@/lib/auth/session';
+import * as actions from '@/lib/database/actions';
+import { NextApiRequest, NextApiResponse } from 'next';
+import { notFound } from 'next/navigation';
+import type { Order } from '@/lib/database/definitions';
+import { NextResponse } from 'next/server';
+import { canAddOrder, isPackageManipulable } from '../../../utils';
 
 
 export async function GET(req: Request, { params }: { params: { packageId: string }}) {
   const user = await getUserProfile();
-  if (!user || user.role !== 'staff' || user.pickupPoint === null) {
+  if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
@@ -32,7 +32,7 @@ export async function GET(req: Request, { params }: { params: { packageId: strin
 export async function POST(req: Request, { params }: { params: { packageId: string }}) {
   try {
     const user = await getUserProfile();
-    if (!user || user.role !== 'staff' || user.pickupPoint === null) {
+    if (!user || user.role !== 'staff' || user.pickupPoint == null) {
       throw ['Unauthorized', 401];
     }
     if (req.headers.get('content-type') !== 'application/json') {

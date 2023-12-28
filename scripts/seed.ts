@@ -1,8 +1,9 @@
-import { VercelPoolClient, db } from "@vercel/postgres"
-import * as actions from "../lib/database/actions";
-import dotenv from "dotenv";
+import { VercelPoolClient, db } from '@vercel/postgres';
+import * as actions from '../lib/database/actions';
+import dotenv from 'dotenv';
 
-import data from "../lib/database/placeholder-data.json";
+import data from '../lib/database/placeholder-data.json';
+import type { AccountData, OrderData, PackageData, PickupPointData } from '../lib/database/definitions';
 
 // async function createCustomerTable(client: VercelPoolClient) {
 //   await client.sql`

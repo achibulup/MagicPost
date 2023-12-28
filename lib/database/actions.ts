@@ -143,6 +143,14 @@ export async function changeAccountPassword(id: number, newPassword: string) {
   `;
 }
 
+export async function setAccountStatus(id: number, status: string) {
+  return sql`
+    UPDATE "accounts"
+    SET "status" = ${status}
+    WHERE "id" = ${id}
+  `;
+}
+
 
 function reformatOrder(order: Order): Order
 {
@@ -260,7 +268,7 @@ export async function createPackage({
   `.then((res) => res.rows[0].id as number);
 }
 
-export async function getPackages(filter: PackageFilter) {
+export async function getPackages(filter: PackageFilter): Promise<Package[] | (Package & { hubFrom: number, hubTo: number })[]> {
   const { id, pickup, pickupFrom, pickupTo, hub, hubFrom, hubTo, status } = filter as {
     pickup?: number;
     pickupFrom?: number;
@@ -280,8 +288,8 @@ export async function getPackages(filter: PackageFilter) {
   const doFilterHubTo = hubTo ? 1 : 0;
   const doFilterStatus = status ? 1 : 0;
   if (doFilterHub) {
-    return sql<Package & { hubFrom: number, }>`
-      SELECT p.*, FROM "packages" p
+    return sql<Package & { hubFrom: number, hubTo: number}>`
+      SELECT p.*, pp1.hub as "hubFrom", pp2.hub as "hubTo" FROM "packages" p
       JOIN "pickupPoints" pp1 ON p."pickupFrom" = pp1.id
       JOIN "pickupPoints" pp2 ON p."pickupTo" = pp2.id 
       WHERE

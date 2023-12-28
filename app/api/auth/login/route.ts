@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
-import { setAuthCookie } from "../../../../lib/auth/session";
-import * as actions from '../../../../lib/database/actions';
-import type { Session } from "../../../../lib/auth/session";
-import { authenticate, clearAuthCookie, getUserProfile } from "../../../../lib/auth/session";
+import { NextResponse } from 'next/server';
+import { setAuthCookie } from '@/lib/auth/session';
+import * as actions from '@/lib/database/actions';
+import type { Session } from '@/lib/auth/session';
+import { authenticate, clearAuthCookie, getUserProfile } from '@/lib/auth/session';
 
 type LoginForm = {
     email: string;
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
     const data = jsonObject as LoginForm;
     const session = await authenticate(data.email, data.password);
-    if (!session) {
+    if (!session || session.status === 'inactive') {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 400 });
     }
     await setAuthCookie(session);

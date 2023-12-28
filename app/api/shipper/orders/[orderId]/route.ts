@@ -1,9 +1,9 @@
-import { getUserProfile } from "@/lib/auth/session";
+import { getUserProfile } from '@/lib/auth/session';
 import * as actions from '@/lib/database/actions';
-import { NextApiRequest, NextApiResponse } from "next";
-import { notFound } from "next/navigation";
-import type { Order } from "@/lib/database/definitions";
-import { NextResponse } from "next/server";
+import { NextApiRequest, NextApiResponse } from 'next';
+import { notFound } from 'next/navigation';
+import type { Order } from '@/lib/database/definitions';
+import { NextResponse } from 'next/server';
 
 
 export async function GET(req: Request, { params }: { params: { orderId: string }}) {

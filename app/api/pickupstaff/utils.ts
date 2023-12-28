@@ -1,9 +1,9 @@
-import { Session } from "@/lib/auth/session";
-import * as actions from "../../../lib/database/actions";
-import type { Order, Account, Package } from "../../../lib/database/definitions";
+import { Session } from '@/lib/auth/session';
+import * as actions from '../../../lib/database/actions';
+import type { Order, Account, Package } from '../../../lib/database/definitions';
 
 export function canAddOrder(pickupFrom: number, pickupTo: number, order?: Order, staff?: Session): true | [string, number] {
-  if (!staff || staff.role !== 'staff' || staff.pickupPoint === null) {
+  if (!staff || staff.role !== 'staff' || staff.pickupPoint == null) {
     return ['Unauthorized', 401];
   }
   if (!order || (order.pickupFrom !== staff.pickupPoint && order.pickupTo !== staff.pickupPoint)) {
@@ -22,7 +22,7 @@ export function canAddOrder(pickupFrom: number, pickupTo: number, order?: Order,
 }
 
 export function isPackageManipulable(pk?: Package, staff?: Session): true | [string, number] {
-  if (!staff || staff.role !== 'staff' || staff.pickupPoint === null) {
+  if (!staff || staff.role !== 'staff' || staff.pickupPoint == null) {
     return ['Unauthorized', 401];
   }
   if (!pk || (pk.pickupFrom !== staff.pickupPoint && pk.pickupTo !== staff.pickupPoint)) {

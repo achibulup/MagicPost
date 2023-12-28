@@ -1,6 +1,6 @@
-import { cookies } from 'next/headers'
-import jwt from "jsonwebtoken";
-import * as actions from "../database/actions";
+import { cookies } from 'next/headers';
+import jwt from 'jsonwebtoken';
+import * as actions from '../database/actions';
 
 
 export type Session = {
@@ -59,12 +59,13 @@ export async function authenticate(email: string, password: string) {
     return null;
   }
   if (await actions.comparePassword(password, account.password)) {
-    const session: Session = {
+    const session: Session & { status: string } = {
       id: account.id,
       email: account.email,
       role: account.role,
       pickupPoint: account.pickupPoint,
-      transitHub: account.transitHub
+      transitHub: account.transitHub,
+      status: account.status
     };
     return session;
   }

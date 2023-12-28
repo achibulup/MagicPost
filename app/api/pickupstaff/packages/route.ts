@@ -7,7 +7,7 @@ import { canAddOrder } from '../utils';
 
 export async function GET(req: Request) {
   const user = await getUserProfile();
-  if (!user || user.role !== 'staff' || user.pickupPoint === null) {
+  if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const user = await getUserProfile();
-    if (!user || user.role !== 'staff' || user.pickupPoint === null) {
+    if (!user || user.role !== 'staff' || user.pickupPoint == null) {
       throw ['Unauthorized', 401];
     }
     const contentType = req.headers.get('content-type');
@@ -53,7 +53,6 @@ export async function POST(req: Request) {
     const pk: PackageData = {
       pickupFrom: user.pickupPoint,
       pickupTo: pickupTo,
-      shipper: shipper ? shipper : null,
     };
     try {
       const pkid = (await actions.createPackage(pk));

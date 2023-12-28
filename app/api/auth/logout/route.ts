@@ -1,7 +1,7 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import type { Session } from "../../../../lib/auth/session";
-import { authenticate, clearAuthCookie, getUserProfile } from "../../../../lib/auth/session";
-import { NextResponse } from "next/server";
+import { NextApiRequest, NextApiResponse } from 'next';
+import type { Session } from '@/lib/auth/session';
+import { authenticate, clearAuthCookie, getUserProfile } from '@/lib/auth/session';
+import { NextResponse } from 'next/server';
 
 type ResponseData = {
     success?: boolean;
