@@ -23,7 +23,7 @@ type Order = {
   sendDate: Date;
   arrivalDate: Date | null;
   shipper: number | null;
-  status: "pending" | "delivering" | "delivered" | "cancelled";
+  status: "pending" | "delivering1" | "delivering2" | "delivered" | "cancelled";
 };
 
 type Package = {
@@ -34,7 +34,6 @@ type Package = {
   pickupTo: number;
   transitDate: Date | null;
   arrivalDate: Date | null;
-  shipper: number | null;
   status: "pending" | "delivering1" | "delivering2" | "delivering3" | "delivered";
 };
 
@@ -114,7 +113,6 @@ type PackageData = {
   weight?: number;
   pickupFrom: number;
   pickupTo: number;
-  shipper: number | null;
   transitDate?: Date | null;
   arrivalDate?: Date | null;
   status?: "pending" | "delivering1" | "delivering2" | "delivering3" | "delivered";
