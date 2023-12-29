@@ -11,7 +11,7 @@ type StaffForm = {
 };
 
 export async function GET(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'manager' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -19,7 +19,7 @@ export async function GET(req: Request) {
     );
   }
   const role = new URL(req.url!).searchParams.get('role');
-  if (role && !(role in ['staff', 'shipper'])) {
+  if (role && !['staff', 'shipper'].includes(role)) {
     return NextResponse.json(
       { error: 'Invalid role' },
       { status: 400 }
@@ -27,13 +27,13 @@ export async function GET(req: Request) {
   }
   const employees = await actions.getEmployees({
     pickupPoint: user.pickupPoint,
-    role: role ? role as 'staff' | 'shipper' : undefined
+    role: role as 'staff' | 'shipper' | undefined
   });
   return NextResponse.json(employees);
 }
 
 export async function POST(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'manager' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },

@@ -5,7 +5,7 @@ import type { AccountData } from '@/lib/database/definitions';
 
 
 export async function GET(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'director') {
     return NextResponse.json(
       { error: 'Unauthorized' },

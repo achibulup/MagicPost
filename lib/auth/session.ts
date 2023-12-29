@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers';
 import jwt from 'jsonwebtoken';
 import * as actions from '../database/actions';
-
+import { unstable_noStore as noStore } from 'next/cache';
+import { parse } from 'cookie';
 
 export type Session = {
   id: number;
@@ -43,12 +44,15 @@ export async function signSession(session: Session) {
 }
 
 
-export async function getUserProfile() {
-  const cookie = cookies().get('session-token');
-  if (!cookie?.value) {
+export async function getUserProfile(req: Request) {
+  noStore();
+  const rawCookie = req.headers.get('cookie');
+  const cookies = rawCookie !== null ? parse(rawCookie) : {};
+  const cookie = cookies['session-token'];
+  if (!cookie) {
     return undefined;
   }
-  return verifySession(cookie.value);
+  return verifySession(cookie);
 }
 
 export async function setAuthCookie(session: Session) {
@@ -60,6 +64,7 @@ export async function setAuthCookie(session: Session) {
 }
 
 export async function clearAuthCookie() {
+  noStore();
   cookies().delete('session-token');
 }
 

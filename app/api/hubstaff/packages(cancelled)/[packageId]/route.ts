@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 
 
 export async function GET(req: Request, { params }: { params: { packageId: string }}) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'staff' || user.transitHub == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -30,7 +30,7 @@ export async function GET(req: Request, { params }: { params: { packageId: strin
 // handle request to update package's status
 export async function PATCH(req: Request, { params }: { params: { packageId: string }}) {
   try {
-    const user = await getUserProfile();
+    const user = await getUserProfile(req);
     if (!user || user.role !== 'staff' || user.transitHub == null) {
       throw ['Unauthorized', 401];
     }

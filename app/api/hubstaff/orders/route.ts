@@ -3,7 +3,7 @@ import * as actions from '@/lib/database/actions';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'staff' || user.transitHub == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   }
   const url = new URL(req.url!);
   const kind = url.searchParams.get('kind'); 
-  if (kind && !(kind in ['incoming', 'outgoing'])) {
+  if (kind && !['incoming', 'outgoing'].includes(kind)) {
     return NextResponse.json(
       { error: 'Invalid kind' },
       { status: 400 }

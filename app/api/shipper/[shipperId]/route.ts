@@ -4,7 +4,7 @@ import * as actions from '@/lib/database/actions';
 import { getUserProfile } from '@/lib/auth/session';
 
 export async function GET(req: Request, { params }: { params: { shipperId: string }}) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   const acc = await actions.getAccountById(Number(params.shipperId));
   if (!acc || acc.role !== 'shipper') {
     return NextResponse.json(

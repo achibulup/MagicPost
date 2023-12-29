@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 
 
 export async function GET(req: Request, { params }: { params: { orderId: string }}) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'manager' || user.transitHub == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -13,7 +13,7 @@ export async function GET(req: Request, { params }: { params: { orderId: string 
     );
   }
   const fromTo = new URL(req.url!).searchParams.get('fromto');
-  if (fromTo && !(fromTo in ['from', 'to'])) {
+  if (fromTo && !['from', 'to'].includes(fromTo)) {
     return NextResponse.json(
       { error: 'Invalid fromto' },
       { status: 400 }

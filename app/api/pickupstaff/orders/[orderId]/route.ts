@@ -6,7 +6,7 @@ import { isVisibleTo } from '../../utils';
 
 
 export async function GET(req: Request, { params }: { params: { orderId: string }}) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -26,7 +26,7 @@ export async function GET(req: Request, { params }: { params: { orderId: string 
 // // handle request to update order's shipper
 // export async function PATCH(req: Request, { params }: { params: { orderId: string }}) {
 //   try {
-//     const user = await getUserProfile();
+//     const user = await getUserProfile(req);
 //     if (!user || user.role !== 'staff' || user.pickupPoint == null) {
 //       throw ['Unauthorized', 401];
 //     }

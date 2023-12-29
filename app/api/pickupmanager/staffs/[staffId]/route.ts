@@ -3,7 +3,7 @@ import { getUserProfile } from '@/lib/auth/session';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request, { params }: { params: { staffId: string }}) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'manager' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -28,7 +28,7 @@ export async function GET(req: Request, { params }: { params: { staffId: string 
 }
 
 export async function PATCH(req: Request, { params }: { params: { staffId: string }}) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'manager' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },

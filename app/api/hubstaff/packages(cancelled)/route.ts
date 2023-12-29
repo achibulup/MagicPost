@@ -3,7 +3,7 @@ import * as actions from '@/lib/database/actions';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'staff' || user.transitHub == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },

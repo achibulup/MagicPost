@@ -5,7 +5,7 @@ import type { Order } from '@/lib/database/definitions';
 import { NextResponse } from 'next/server';
 
 export async function GET(req: Request, { params }: { params: { orderId: string } }) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'customer') {
     return NextResponse.json(
       { error: 'Unauthorized' },

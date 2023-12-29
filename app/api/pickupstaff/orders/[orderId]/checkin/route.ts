@@ -6,7 +6,7 @@ import { isVisibleTo } from '../../../utils';
 
 
 export async function POST(req: Request, { params }: { params: { orderId: string }}) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },

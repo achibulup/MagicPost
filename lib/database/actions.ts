@@ -251,18 +251,19 @@ export async function getOrderById(id: number) {
 
 export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderWithHub)[]> {
   const { id, sender, receiverNumber, receiverAddress, hub, hubFrom, hubTo, pickup, pickupFrom, pickupTo, shipper, status } = filter;
-  const doFilterId = id === undefined ? 1 : 0;
-  const doFilterSender = sender === undefined ? 1 : 0;
-  const doFilterReceiverNumber = receiverNumber === undefined ? 1 : 0;
-  const doFilterReceiverAddress = receiverAddress === undefined ? 1 : 0;
-  const doFilterHub = hub === undefined ? 1 : 0;
-  const doFilterHubFrom = hubFrom === undefined ? 1 : 0;
-  const doFilterHubTo = hubTo === undefined ? 1 : 0;
-  const doFilterPickup = pickup === undefined ? 1 : 0;
-  const doFilterPickupFrom = pickupFrom === undefined ? 1 : 0;
-  const doFilterPickupTo = pickupTo === undefined ? 1 : 0;
-  const doFilterShipper = shipper === undefined ? 1 : 0;
-  const doFilterStatus = status === undefined ? 1 : 0;
+  const doFilterId = id !== undefined ? 1 : 0;
+  const doFilterSender = sender !== undefined ? 1 : 0;
+  const doFilterReceiverNumber = receiverNumber !== undefined ? 1 : 0;
+  const doFilterReceiverAddress = receiverAddress !== undefined ? 1 : 0;
+  const doFilterHub = hub !== undefined ? 1 : 0;
+  const doFilterHubFrom = hubFrom !== undefined ? 1 : 0;
+  const doFilterHubTo = hubTo !== undefined ? 1 : 0;
+  const doFilterPickup = pickup !== undefined ? 1 : 0;
+  const doFilterPickupFrom = pickupFrom !== undefined ? 1 : 0;
+  const doFilterPickupTo = pickupTo !== undefined ? 1 : 0;
+  const doFilterShipper = shipper !== undefined ? 1 : 0;
+  const doFilterStatus = status !== undefined ? 1 : 0;
+  console.log(doFilterId, doFilterSender, doFilterReceiverNumber, doFilterReceiverAddress, doFilterHub, doFilterHubFrom, doFilterHubTo, doFilterPickup, doFilterPickupFrom, doFilterPickupTo, doFilterShipper, doFilterStatus);
   if (doFilterHub) {
     return sql<OrderWithHub>`
       SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 

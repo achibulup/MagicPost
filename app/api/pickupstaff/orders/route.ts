@@ -15,7 +15,7 @@ type OrderPostData = {
 }
 
 export async function GET(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   }
   const url = new URL(req.url!);
   const kind = url.searchParams.get('kind'); 
-  if (kind && !(kind in ['incoming', 'outgoing', 'pending-transport', 'pending-delivery'])) {
+  if (kind && !['incoming', 'outgoing', 'pending-transport', 'pending-delivery'].includes(kind)) {
     return NextResponse.json(
       { error: 'Invalid kind' },
       { status: 400 }
@@ -82,7 +82,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },

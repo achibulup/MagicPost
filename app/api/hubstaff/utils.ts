@@ -14,9 +14,11 @@ export async function getOrderWithHubs(orderId: number, hub: number) {
 }
 
 export function isVisibleTo(order: Order & { hubFrom: number, hubTo: number }, staff: Session) {
+  console.log(order.hubFrom === staff.transitHub);
+  console.log(order.status);
   return (
-    (order.hubFrom === staff.transitHub && order.status in [3, 4])
-  ||(order.pickupTo === staff.transitHub && order.status in [5, 6])
+    (order.hubFrom === staff.transitHub && [3, 4].includes(order.status))
+  ||(order.hubTo === staff.transitHub && [5, 6].includes(order.status))
   );
 }
 

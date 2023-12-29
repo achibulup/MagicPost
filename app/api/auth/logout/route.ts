@@ -9,7 +9,7 @@ type ResponseData = {
 }
 
 export async function POST(req: Request) {
-    const user = await getUserProfile();
+    const user = await getUserProfile(req);
     if (!user) {
         return NextResponse.json(
             { error: 'Unauthorized' },

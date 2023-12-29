@@ -11,7 +11,7 @@ type StaffForm = {
 };
 
 export async function GET(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'manager' || user.transitHub == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'manager' || user.transitHub == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },

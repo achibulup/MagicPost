@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 type Result = Order[] | { error: string }; 
 
 export async function GET(req: Request) {
-  const user = await getUserProfile();
+  const user = await getUserProfile(req);
   if (!user || user.role !== 'shipper') {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     );
   }
   const status = new URL(req.url!).searchParams.get('status');
-  if (status && !(status in ['transported', 'delivering', 'delivered', 'cancelled'])) {
+  if (status && !['transported', 'delivering', 'delivered', 'cancelled'].includes(status)) {
     return NextResponse.json(
       { error: 'Invalid status' },
       { status: 400 }
