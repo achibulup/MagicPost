@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import NavLinks from '@/app/ui/director/nav-links';
+import CustomerNavLinks from '@/app/ui/customer/customer-nav-links';
 import LogoutForm from '@/app/ui/logout-form';
 import MagicPostLogo from '@/app/ui/mgpt-logo';
 
@@ -17,7 +17,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </Link>
           <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
-            <NavLinks />
+            <CustomerNavLinks />
             <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
             <LogoutForm />
           </div>
