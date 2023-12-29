@@ -15,7 +15,7 @@ type Account = {
     pickupPoint?: null;
     transitHub: number;
   } | {
-    role: "customer";
+    role: "customer" | "director";
     pickupPoint?: null;
     transitHub?: null;
   }
@@ -75,7 +75,7 @@ type AccountData = {
     pickupPoint?: null;
     transitHub: number;
   } | {
-    role: "customer";
+    role: "customer" | "director";
     pickupPoint?: null;
     transitHub?: null;
   }

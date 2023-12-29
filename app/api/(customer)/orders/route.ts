@@ -1,8 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getUserProfile } from '../../../../lib/auth/session';
-import * as actions from '../../../../lib/database/actions';
-import { notFound } from 'next/navigation';
-import type { Order } from '../../../../lib/database/definitions';
+import { getUserProfile } from '@/lib/auth/session';
+import * as actions from '@/lib/database/actions';
 import { NextResponse } from 'next/server';
 
 
@@ -14,10 +12,27 @@ export async function GET(req: Request) {
       { status: 401 }
     );
   }
-  const status = new URL(req.url!).searchParams.get('status') ?? undefined;
-  const orders = await actions.getOrders({
-    sender: user.id,
-    status: status
-  });
-  return NextResponse.json(orders);
+  const status = new URL(req.url!).searchParams.get('status');
+  if (status && !(status in ['transporting', 'delivering', 'delivered', 'cancelled'])) {
+    return NextResponse.json(
+      { error: 'Invalid status' },
+      { status: 400 }
+    );
+  }
+  if (!status) {
+    const orders = await actions.getOrders({ sender: user.id });
+    return NextResponse.json(orders);
+  } else if (status === 'transporting') {
+    const orders = await actions.getTransportingOrders(user.id);
+    return NextResponse.json(orders);
+  } else if (status === 'delivering') {
+    const orders = await actions.getDeliveringOrders(user.id);
+    return NextResponse.json(orders);
+  } else if (status === 'delivered') {
+    const orders = await actions.getDeliveredOrders(user.id);
+    return NextResponse.json(orders);
+  } else if (status === 'cancelled') {
+    const orders = await actions.getCancelledOrders(user.id);
+    return NextResponse.json(orders);
+  }
 }

@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getUserProfile } from '../../../../lib/auth/session';
-import * as actions from '../../../../lib/database/actions';
-import type { AccountData } from '../../../../lib/database/definitions';
+import { getUserProfile } from '@/lib/auth/session';
+import * as actions from '@/lib/database/actions';
+import type { AccountData } from '@/lib/database/definitions';
 
-type StaffForm = AccountData;
+type StaffForm = {
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+};
 
 export async function GET(req: Request) {
   const user = await getUserProfile();
@@ -13,8 +18,16 @@ export async function GET(req: Request) {
       { status: 401 }
     );
   }
+  const role = new URL(req.url!).searchParams.get('role');
+  if (role && role !== 'staff') {
+    return NextResponse.json(
+      { error: 'Invalid role' },
+      { status: 400 }
+    );
+  }
   const employees = await actions.getEmployees({
-    transitHub: user.transitHub
+    transitHub: user.transitHub,
+    role: role ? role as 'staff': undefined
   });
   return NextResponse.json(employees);
 }
@@ -39,7 +52,7 @@ export async function POST(req: Request) {
   for (const [key, value] of formdata.entries()) {
     jsonObject[key] = value;
   }
-  const { name, email, password, phone, role } = jsonObject as StaffForm;
+  const { name, email, phone, role } = jsonObject as StaffForm;
   const check = await actions.getAccountByEmail(email);
   if (check) {
     return NextResponse.json(
@@ -47,6 +60,7 @@ export async function POST(req: Request) {
       { status: 400 }
     );
   }
+  const password = "123456";
   try {
     await actions.createAccount({
       name,

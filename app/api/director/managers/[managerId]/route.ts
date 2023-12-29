@@ -2,29 +2,29 @@ import * as actions from '@/lib/database/actions';
 import { getUserProfile } from '@/lib/auth/session';
 import { NextResponse } from 'next/server';
 
-export async function GET(req: Request, { params }: { params: { staffId: string }}) {
+export async function GET(req: Request, { params }: { params: { managerId: string }}) {
   const user = await getUserProfile();
-  if (!user || user.role !== 'manager' || user.transitHub == null) {
+  if (!user || user.role !== 'director') {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
     );
   }
-  const staff = await actions.getAccountById(Number(params.staffId));
-  if (!staff || staff.transitHub !== user.transitHub) {
+  const manager = await actions.getAccountById(Number(params.managerId));
+  if (manager.role !== 'manager') {
     return NextResponse.json(
-      { error: 'Staff not found' },
+      { error: 'manager not found' },
       { status: 404 }
     );
   }
-  const staffInfo = {
-    id: staff.id,
-    name: staff.name,
-    phone: staff.phone,
-    status: staff.status,
-    role: staff.role
+  const managerInfo = {
+    id: manager.id,
+    name: manager.name,
+    phone: manager.phone,
+    status: manager.status,
+    role: manager.role
   }
-  return NextResponse.json(staffInfo);
+  return NextResponse.json(managerInfo);
 }
 
 export async function PATCH(req: Request, { params }: { params: { staffId: string }}) {

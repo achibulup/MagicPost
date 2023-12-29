@@ -6,10 +6,20 @@ import * as actions from '../database/actions';
 export type Session = {
   id: number;
   email: string;
-  role: "customer" | "shipper" | "staff" | "manager";
-  pickupPoint: number | null;
-  transitHub: number | null;
-};
+} & ({
+  role: "manager" | "staff" | "shipper";
+  pickupPoint: number;
+  transitHub? : null;
+} | {
+  role: "manager" | "staff";
+  pickupPoint?: null;
+  transitHub: number;
+} |{
+  role: "customer" | "director";
+  pickupPoint?: null;
+  transitHub?: null;
+});
+
 
 export async function verifySession(token: string) {
   return new Promise<Session | null>((resolve, reject) => {
@@ -59,14 +69,14 @@ export async function authenticate(email: string, password: string) {
     return null;
   }
   if (await actions.comparePassword(password, account.password)) {
-    const session: Session & { status: string } = {
+    const session = {
       id: account.id,
       email: account.email,
       role: account.role,
       pickupPoint: account.pickupPoint,
       transitHub: account.transitHub,
       status: account.status
-    };
+    } as Session & { status: string };
     return session;
   }
   return null;

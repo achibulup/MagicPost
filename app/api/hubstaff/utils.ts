@@ -2,11 +2,21 @@ import { Session } from '@/lib/auth/session';
 import * as actions from '@/lib/database/actions';
 import type { Order } from '@/lib/database/definitions';
 
-export function isVisibleTo(order: Order, staff: Session) {
+export async function getOrderWithHubs(orderId: number, hub: number) {
+  const orders = (await actions.getOrders({
+    id: orderId,
+    hub
+  }));
+  if (orders.length === 0) {
+    return undefined;
+  }
+  return orders[0] as Order & { hubFrom: number, hubTo: number };
+}
+
+export function isVisibleTo(order: Order & { hubFrom: number, hubTo: number }, staff: Session) {
   return (
-    (order.pickupFrom === staff.pickupPoint && order.status === 2)
-  ||(order.pickupTo === staff.pickupPoint && order.status === 7)
-  ||(order.pickupTo === staff.pickupPoint && order.status === 8)
+    (order.hubFrom === staff.transitHub && order.status in [3, 4])
+  ||(order.pickupTo === staff.transitHub && order.status in [5, 6])
   );
 }
 

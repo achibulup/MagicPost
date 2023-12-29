@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
 import { sql } from '@vercel/postgres';
-import type { Account, Order, Package, PickupPoint, TransitHub, AccountData, CustomerData, OrderData, PackageData, PickupPointData, TransitHubData } from './definitions';
+import type { Account, Order, PickupPoint, TransitHub, AccountData, CustomerData, OrderData, PickupPointData, TransitHubData } from './definitions';
 
 export const hashPassword = async (password: string) => {
   const salt = await bcrypt.genSalt(10);
@@ -27,39 +27,20 @@ type EmployeeFilter = {
 };
 
 export type OrderFilter = {
-  sender?: number;
-  receiverNumber?: string;
-  receiverAddress?: string;
-  package?: number;
-  pickup: number; // pickupFrom or pickupTo
-  pickupFrom?: undefined;
-  pickupTo?: undefined;
-  shipper?: number;
-  status?: string;
-} | {
-  sender?: number;
-  receiverNumber?: string;
-  receiverAddress?: string;
-  package?: number;
-  pickup?: undefined; // pickupFrom or pickupTo
-  pickupFrom?: number;
-  pickupTo?: number;
-  shipper?: number;
-  status?: string;
-};
-
-export type PackageFilter = {
   id?: number;
-  status?: string;
-} & ({
-  pickup?: number; // pickupFrom or pickupTo
-} | {
-  hub?: number; // hubFrom or hubTo
-} | (
-  ({ pickupFrom?: number; } | { hubFrom?: number; })
-  & ({ pickupTo?: number; } | { hubTo?: number; })
-));
-
+  sender?: number;
+  receiverNumber?: string;
+  receiverAddress?: string;
+  shipper?: number | null;
+  status?: number;
+  hub?: number;
+  pickup?: number;
+  pickupFrom?: number;
+  hubFrom?: number;
+  pickupTo?: number;
+  hubTo?: number;
+};
+  
 
 // export async function getCustomerById(id: number) {
 //   return sql<Customer>`
@@ -124,7 +105,7 @@ export async function getEmployees(filter: EmployeeFilter) {
   const doFilterPickupPoint = pickupPoint ? 1 : 0;
   const doFilterTransitHub = transitHub ? 1 : 0;
   return sql<Account>`
-    SELECT * FROM "accounts"
+    SELECT a."id", a."name", a."email", a."role", a."pickupPoint", a."transitHub" FROM "accounts" a
     WHERE 
       (${doFilterName} = 0 OR "name" = ${name}) AND
       (${doFilterEmail} = 0 OR "email" = ${email}) AND
@@ -132,6 +113,49 @@ export async function getEmployees(filter: EmployeeFilter) {
       (${doFilterPickupPoint} = 0 OR "pickupPoint" = ${pickupPoint}) AND
       (${doFilterTransitHub} = 0 OR "transitHub" = ${transitHub}) 
   `.then((res) => res.rows);
+}
+
+export async function updateAccount(id: number, { name, email, phone, role }:
+{
+  name?: string,
+  email?: string,
+  phone?: string,
+  role?: string,
+}) {
+  const doUpdateName = name ? 1 : 0;
+  const doUpdateEmail = email ? 1 : 0;
+  const doUpdatePhone = phone ? 1 : 0;
+  const doUpdateRole = role ? 1 : 0;
+  const promises = [];
+  if (doUpdateName) {
+    promises.push(sql`
+      UPDATE "accounts"
+      SET "name" = ${name}
+      WHERE "id" = ${id}
+    `);
+  }
+  if (doUpdateEmail) {
+    promises.push(sql`
+      UPDATE "accounts"
+      SET "email" = ${email}
+      WHERE "id" = ${id}
+    `);
+  }
+  if (doUpdatePhone) {
+    promises.push(sql`
+      UPDATE "accounts"
+      SET "phone" = ${phone}
+      WHERE "id" = ${id}
+    `);
+  }
+  if (doUpdateRole) {
+    promises.push(sql`
+      UPDATE "accounts"
+      SET "role" = ${role}
+      WHERE "id" = ${id}
+    `);
+  }
+  await Promise.all(promises);
 }
 
 export async function changeAccountPassword(id: number, newPassword: string) {
@@ -151,13 +175,42 @@ export async function setAccountStatus(id: number, status: string) {
   `;
 }
 
+type OrderWithHub = Order & {
+  hubFrom: number,
+  hubTo: number,
+  pickupFromName: string,
+  pickupToName: string,
+  hubFromName: string,
+  hubToName: string,
+};
 
-function reformatOrder(order: Order): Order
+type OrderExtended = OrderWithHub & {
+  statusString: string,
+};
+
+export function statusString(order: OrderWithHub) {
+  if (order.status != Math.floor(order.status)) return 'Invalid';
+  if (order.status === -1) return 'Cancelled';
+  if (order.status === 2) return 'PendingTransport';
+  if (order.status === 3) return `Transporting from ${order.pickupFromName} to ${order.hubFromName}`;
+  if (order.status === 4) return `At ${order.hubFromName}`;
+  if (order.status === 5) return `Transporting from ${order.hubFromName} to ${order.hubToName}`;
+  if (order.status === 6) return `At ${order.hubToName}`;
+  if (order.status === 7) return `Transporting from ${order.hubToName} to ${order.pickupToName}`;
+  if (order.status === 8) return 'Transported';
+  if (order.status === 9) return 'PendingDeliver';
+  if (order.status === 10) return 'Delivering';
+  if (order.status === 11) return 'Delivered';
+  return 'Invalid';
+}
+
+function reformatOrder(order: OrderWithHub): OrderExtended
 {
     return {
       ...order, 
       sendDate: new Date(order.sendDate), 
-      arrivalDate: order.arrivalDate ? new Date(order.arrivalDate) : null
+      arrivalDate: order.arrivalDate ? new Date(order.arrivalDate) : null,
+      statusString: statusString(order)
     };
 }
 
@@ -176,7 +229,7 @@ export async function createOrder({
 }: OrderData) {
   const formattedSendDate = sendDate.toISOString();
   const formattedArrivalDate = arrivalDate ? arrivalDate.toISOString() : null;
-  status = status || "pending";
+  status = status || 2;
   return sql`
     INSERT INTO "orders" ("sender", "weight", "receiverNumber", "receiverAddress", "pickupFrom", "pickupTo", "shipper", "sendDate", "arrivalDate", "charge", "status")
     VALUES (${sender}, ${weight}, ${receiverNumber}, ${receiverAddress}, ${pickupFrom}, ${pickupTo}, 
@@ -185,43 +238,245 @@ export async function createOrder({
 }
 
 export async function getOrderById(id: number) {
-  return sql<Order>`
-    SELECT * FROM "orders" WHERE "id" = ${id}
-  `.then((res) => reformatOrder(res.rows[0]));
+  return sql<OrderWithHub>`
+    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    FROM "orders" o
+    JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+    JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+    JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+    JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+    WHERE o."id" = ${id}
+  `.then((res) => (res.rows[0] && reformatOrder(res.rows[0])) as OrderExtended | undefined);
 }
 
-export async function getOrders(filter: OrderFilter) {
-  const { sender, receiverNumber, receiverAddress, pickup, pickupFrom, pickupTo, shipper, status } = filter;
-  const pk = filter.package;
-  const doFilterSender = sender ? 1 : 0;
-  const doFilterReceiverNumber = receiverNumber ? 1 : 0;
-  const doFilterReceiverAddress = receiverAddress ? 1 : 0;
-  const doFilterPackage = pk ? 1 : 0;
-  const doFilterPickup = pickup ? 1 : 0;
-  const doFilterPickupFrom = pickupFrom ? 1 : 0;
-  const doFilterPickupTo = pickupTo ? 1 : 0;
-  const doFilterShipper = shipper ? 1 : 0;
-  const doFilterStatus = status ? 1 : 0;
-  return sql<Order>`
-    SELECT * FROM "orders"
-    WHERE 
-      (${doFilterSender} = 0 OR "sender" = ${sender}) AND
-      (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
-      (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
-      (${doFilterPackage} = 0 OR "package" = ${pk}) AND
-      (${doFilterPickup} = 0 OR "pickupFrom" = ${pickup} OR "pickupTo" = ${pickup}) AND
-      (${doFilterPickupFrom} = 0 OR "pickupFrom" = ${pickupFrom}) AND
-      (${doFilterPickupTo} = 0 OR "pickupTo" = ${pickupTo}) AND
-      (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
-      (${doFilterStatus} = 0 OR "status" = ${status})
+export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderWithHub)[]> {
+  const { id, sender, receiverNumber, receiverAddress, hub, hubFrom, hubTo, pickup, pickupFrom, pickupTo, shipper, status } = filter;
+  const doFilterId = id === undefined ? 1 : 0;
+  const doFilterSender = sender === undefined ? 1 : 0;
+  const doFilterReceiverNumber = receiverNumber === undefined ? 1 : 0;
+  const doFilterReceiverAddress = receiverAddress === undefined ? 1 : 0;
+  const doFilterHub = hub === undefined ? 1 : 0;
+  const doFilterHubFrom = hubFrom === undefined ? 1 : 0;
+  const doFilterHubTo = hubTo === undefined ? 1 : 0;
+  const doFilterPickup = pickup === undefined ? 1 : 0;
+  const doFilterPickupFrom = pickupFrom === undefined ? 1 : 0;
+  const doFilterPickupTo = pickupTo === undefined ? 1 : 0;
+  const doFilterShipper = shipper === undefined ? 1 : 0;
+  const doFilterStatus = status === undefined ? 1 : 0;
+  if (doFilterHub) {
+    return sql<OrderWithHub>`
+      SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+      FROM "orders" o
+      JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+      JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+      JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+      JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+      WHERE
+        (pp1."hub" = ${hub} OR pp2."hub" = ${hub}) AND
+        (${doFilterId} = 0 OR o."id" = ${id}) AND
+        (${doFilterSender} = 0 OR "sender" = ${sender}) AND
+        (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
+        (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
+        (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
+        (${doFilterStatus} = 0 OR "status" = ${status})
+      ORDER BY "sendDate" DESC
+    `.then((res) => res.rows.map(reformatOrder));
+  } else if (doFilterPickup) {
+    return sql<OrderWithHub>`
+    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    FROM "orders" o
+    JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+    JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+    JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+    JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+    WHERE
+        ("pickupFrom" = ${pickup} OR "pickupTo" = ${pickup}) AND
+        (${doFilterId} = 0 OR o."id" = ${id}) AND
+        (${doFilterSender} = 0 OR "sender" = ${sender}) AND
+        (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
+        (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
+        (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
+        (${doFilterStatus} = 0 OR "status" = ${status})
+      ORDER BY "sendDate" DESC
+    `.then((res) => res.rows.map(reformatOrder));
+  } else {
+    if (doFilterHubFrom) {
+      if (doFilterHubTo) {
+        return sql<OrderWithHub>`
+          SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+          FROM "orders" o
+          JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+          JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+          JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+          JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+          WHERE
+            pp1."hub" = ${hubFrom} AND pp2."hub" = ${hubTo} AND
+            (${doFilterId} = 0 OR o."id" = ${id}) AND
+            (${doFilterSender} = 0 OR "sender" = ${sender}) AND
+            (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
+            (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
+            (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
+            (${doFilterStatus} = 0 OR "status" = ${status})
+          ORDER BY "sendDate" DESC
+        `.then((res) => res.rows.map(reformatOrder));
+      } else {
+        return sql<OrderWithHub>`
+          SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+          FROM "orders" o
+          JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+          JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+          JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+          JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+          WHERE
+            pp1."hub" = ${hubFrom} AND
+            (${doFilterPickupTo} = 0 OR "pickupTo" = ${pickupTo}) AND
+            (${doFilterId} = 0 OR o."id" = ${id}) AND
+            (${doFilterSender} = 0 OR "sender" = ${sender}) AND
+            (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
+            (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
+            (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
+            (${doFilterStatus} = 0 OR "status" = ${status})
+          ORDER BY "sendDate" DESC
+        `.then((res) => res.rows.map(reformatOrder));
+      }
+    } else {
+      if (doFilterHubTo) {
+        return sql<OrderWithHub>`
+          SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+          FROM "orders" o
+          JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+          JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+          JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+          JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+          WHERE
+            pp2."hub" = ${hubTo} AND
+            (${doFilterPickupFrom} = 0 OR "pickupFrom" = ${pickupFrom}) AND
+            (${doFilterId} = 0 OR o."id" = ${id}) AND
+            (${doFilterSender} = 0 OR "sender" = ${sender}) AND
+            (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
+            (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
+            (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
+            (${doFilterStatus} = 0 OR "status" = ${status})
+          ORDER BY "sendDate" DESC
+        `.then((res) => res.rows.map(reformatOrder));
+      } else {
+        return sql<OrderWithHub>`
+          SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+          FROM "orders" o
+          JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+          JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+          JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+          JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+          WHERE 
+            (${doFilterPickupFrom} = 0 OR "pickupFrom" = ${pickupFrom}) AND
+            (${doFilterPickupTo} = 0 OR "pickupTo" = ${pickupTo}) AND
+            (${doFilterId} = 0 OR o."id" = ${id}) AND
+            (${doFilterSender} = 0 OR "sender" = ${sender}) AND
+            (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
+            (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
+            (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
+            (${doFilterStatus} = 0 OR "status" = ${status})
+          ORDER BY "sendDate" DESC
+        `.then((res) => res.rows.map(reformatOrder));
+      }
+    }
+  }
+}
+
+export async function getTransportingOrders(customer: number) {
+  return sql<OrderWithHub>`
+    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    FROM "orders" o
+    JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+    JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+    JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+    JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+    WHERE
+      "sender" = ${customer} AND
+      "status" < 9 AND "status" > 1
     ORDER BY "sendDate" DESC
   `.then((res) => res.rows.map(reformatOrder));
+}
+
+export async function getDeliveringOrders(customer: number) {
+  return sql<OrderWithHub>`
+    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    FROM "orders" o
+    JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+    JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+    JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+    JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+    WHERE
+      "sender" = ${customer} AND
+      "status" < 11 AND "status" > 8
+    ORDER BY "sendDate" DESC
+  `.then((res) => res.rows.map(reformatOrder));
+}
+
+export async function getDeliveredOrders(customer: number) {
+  return sql<OrderWithHub>`
+    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    FROM "orders" o
+    JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+    JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+    JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+    JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+    WHERE
+      "sender" = ${customer} AND
+      "status" = 11
+    ORDER BY "sendDate" DESC
+  `.then((res) => res.rows.map(reformatOrder));
+}
+
+export async function getCancelledOrders(customer: number) {
+  return sql<OrderWithHub>`
+    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    FROM "orders" o
+    JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+    JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+    JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+    JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+    WHERE
+      "sender" = ${customer} AND
+      "status" = -1
+    ORDER BY "sendDate" DESC
+  `.then((res) => res.rows.map(reformatOrder));
+}
+
+export async function getOrdersByHub(hub: number, kind?: 'incoming' | 'outgoing') {
+  const acceptIncoming = (kind === 'incoming' || !kind) ? 1 : 0;
+  const acceptOutgoing = (kind === 'outgoing' || !kind) ? 1 : 0;
+  return sql<OrderWithHub>`
+    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    FROM "orders" o
+    JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
+    JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
+    JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
+    JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
+    WHERE
+      (${acceptIncoming} = 1 AND pp1."hub" = ${hub} AND o."status" = 3) OR
+      (${acceptIncoming} = 1 AND pp2."hub" = ${hub} AND o."status" = 5) OR
+      (${acceptOutgoing} = 1 AND pp1."hub" = ${hub} AND o."status" = 4) OR
+      (${acceptOutgoing} = 1 AND pp2."hub" = ${hub} AND o."status" = 6)
+    ORDER BY "sendDate" DESC
+  `.then((res) => res.rows.map(reformatOrder));
+}
+
+
+export async function setOrderStatus(id: number, status: number) {
+  return sql`
+    UPDATE "orders"
+    SET "status" = ${status}
+    WHERE "id" = ${id}
+  `;
 }
 
 export async function setOrderShipper(id: number, shipper?: number | null) {
   return sql`
     UPDATE "orders"
-    SET "shipper" = ${shipper}
+    SET 
+      "shipper" = ${shipper}
+      "status" = 10
     WHERE "id" = ${id}
   `;
 }
@@ -230,7 +485,7 @@ export async function orderDelivered(id: number, arrivalDate: Date) {
   const formattedArrivalDate = arrivalDate.toISOString();
   return sql`
     UPDATE "orders"
-    SET "status" = 'delivered', "arrivalDate" = ${formattedArrivalDate}
+    SET "status" = 11, "arrivalDate" = ${formattedArrivalDate}
     WHERE "id" = ${id}
   `;
 }
@@ -238,207 +493,230 @@ export async function orderDelivered(id: number, arrivalDate: Date) {
 export async function orderCancelled(id: number) {
   return sql`
     UPDATE "orders"
-    SET "status" = 'cancelled'
+    SET "status" = -1
     WHERE "id" = ${id}
   `;
 }
 
-function reformatPackage<P extends Package>(pk: P) : P
-{
-    return {
-      ...pk, 
-      transitDate: pk.transitDate ? new Date(pk.transitDate) : null, 
-      arrivalDate: pk.arrivalDate ? new Date(pk.arrivalDate) : null
-    };
-}
+// function reformatPackage<P extends Package>(pk: P) : P
+// {
+//     return {
+//       ...pk, 
+//       transitDate: pk.transitDate ? new Date(pk.transitDate) : null, 
+//       arrivalDate: pk.arrivalDate ? new Date(pk.arrivalDate) : null
+//     };
+// }
 
-export async function createPackage({
-  pickupFrom,
-  pickupTo,
-  transitDate,
-  arrivalDate,
-  status,
-}: PackageData) {
-  const formattedTransitDate = transitDate ? transitDate.toISOString() : null;
-  const formattedArrivalDate = arrivalDate ? arrivalDate.toISOString() : null;
-  status = status || "pending";
-  return sql`
-    INSERT INTO "packages" ("pickupFrom", "pickupTo", "transitDate", "arrivalDate", "status")
-    VALUES (${pickupFrom}, ${pickupTo}, ${formattedTransitDate}, ${formattedArrivalDate}, ${status}) RETURNING "id"
-  `.then((res) => res.rows[0].id as number);
-}
+// export async function createPackage({
+//   pickupFrom,
+//   pickupTo,
+//   transitDate,
+//   arrivalDate,
+//   status,
+// }: PackageData) {
+//   const formattedTransitDate = transitDate ? transitDate.toISOString() : null;
+//   const formattedArrivalDate = arrivalDate ? arrivalDate.toISOString() : null;
+//   status = status || "pending";
+//   return sql`
+//     INSERT INTO "packages" ("pickupFrom", "pickupTo", "transitDate", "arrivalDate", "status")
+//     VALUES (${pickupFrom}, ${pickupTo}, ${formattedTransitDate}, ${formattedArrivalDate}, ${status}) RETURNING "id"
+//   `.then((res) => res.rows[0].id as number);
+// }
 
-export async function getPackages(filter: PackageFilter): Promise<Package[] | (Package & { hubFrom: number, hubTo: number })[]> {
-  const { id, pickup, pickupFrom, pickupTo, hub, hubFrom, hubTo, status } = filter as {
-    pickup?: number;
-    pickupFrom?: number;
-    pickupTo?: number;
-    hub?: number;
-    hubFrom?: number;
-    hubTo?: number;
-    id?: number;
-    status?: string;
-  };
-  const doFilterId = id ? 1 : 0;
-  const doFilterPickup = pickup ? 1 : 0;
-  const doFilterPickupFrom = pickupFrom ? 1 : 0;
-  const doFilterPickupTo = pickupTo ? 1 : 0;
-  const doFilterHub = hub ? 1 : 0;
-  const doFilterHubFrom = hubFrom ? 1 : 0;
-  const doFilterHubTo = hubTo ? 1 : 0;
-  const doFilterStatus = status ? 1 : 0;
-  if (doFilterHub) {
-    return sql<Package & { hubFrom: number, hubTo: number}>`
-      SELECT p.*, pp1.hub as "hubFrom", pp2.hub as "hubTo" FROM "packages" p
-      JOIN "pickupPoints" pp1 ON p."pickupFrom" = pp1.id
-      JOIN "pickupPoints" pp2 ON p."pickupTo" = pp2.id 
-      WHERE
-        (pp1."hub" = ${hubFrom} OR pp2."hub" = ${hubTo}) AND
-        (${doFilterId} = 0 OR "id" = ${id}) AND
-        (${doFilterStatus} = 0 OR "status" = ${status})
-      ORDER BY "transitDate" DESC
-    `.then((res) => res.rows.map(reformatPackage));
-  } else if (doFilterPickup) {
-    return sql<Package>`
-      SELECT p.* FROM "packages" p
-      WHERE
-        (p."pickupFrom" = ${pickup} OR p."pickupTo" = ${pickup}) AND
-        (${doFilterId} = 0 OR "id" = ${id}) AND
-        (${doFilterStatus} = 0 OR "status" = ${status})
-      ORDER BY "transitDate" DESC
-    `.then((res) => res.rows.map(reformatPackage));
-  } else if (doFilterHubFrom) {
-    if (doFilterHubTo) {
-      return sql<Package>`
-        SELECT p.* FROM "packages" p
-        JOIN "pickupPoints" pp1 ON p."pickupFrom" = pp1.id
-        JOIN "pickupPoints" pp2 ON p."pickupTo" = pp2.id 
-        WHERE
-          pp1."hub" = ${hubFrom} AND pp2."hub" = ${hubTo} AND
-          (${doFilterId} = 0 OR "id" = ${id}) AND
-          (${doFilterStatus} = 0 OR "status" = ${status})
-        ORDER BY "transitDate" DESC
-      `.then((res) => res.rows.map(reformatPackage));
-    } else {
-      return sql<Package>`
-        SELECT p.* FROM "packages" p
-        JOIN "pickupPoints" pp1 ON p."pickupFrom" = pp1.id
-        WHERE
-          pp1."hub" = ${hubFrom} AND
-          (${doFilterPickupTo} = 0 OR "pickupTo" = ${pickupTo}) AND
-          (${doFilterId} = 0 OR "id" = ${id})
-          (${doFilterStatus} = 0 OR "status" = ${status})
-        ORDER BY "transitDate" DESC
-      `.then((res) => res.rows.map(reformatPackage));
-    }
-  } else {
-    if (doFilterHubTo) {
-      return sql<Package>`
-        SELECT p.* FROM "packages" p
-        JOIN "pickupPoints" pp2 ON p."pickupTo" = pp2.id 
-        WHERE
-          pp2."hub" = ${hubTo} AND
-          (${doFilterPickupFrom} = 0 OR "pickupFrom" = ${pickupFrom}) AND
-          (${doFilterId} = 0 OR "id" = ${id}) AND
-          (${doFilterStatus} = 0 OR "status" = ${status})
-        ORDER BY "transitDate" DESC
-      `.then((res) => res.rows.map(reformatPackage));
-    } else {
-      return sql<Package>`
-        SELECT p.* FROM "packages"
-        WHERE 
-          (${doFilterPickupFrom} = 0 OR "pickupFrom" = ${pickupFrom}) AND
-          (${doFilterPickupTo} = 0 OR "pickupTo" = ${pickupTo}) AND
-          (${doFilterId} = 0 OR "id" = ${id}) AND
-          (${doFilterStatus} = 0 OR "status" = ${status})
-        ORDER BY "transitDate" DESC
-      `.then((res) => res.rows.map(reformatPackage));
-    }
-  }
-}
+// export async function getPackages(filter: PackageFilter): Promise<Package[] | (Package & { hubFrom: number, hubTo: number })[]> {
+//   const { id, pickup, pickupFrom, pickupTo, hub, hubFrom, hubTo, status } = filter as {
+//     pickup?: number;
+//     pickupFrom?: number;
+//     pickupTo?: number;
+//     hub?: number;
+//     hubFrom?: number;
+//     hubTo?: number;
+//     id?: number;
+//     status?: string;
+//   };
+//   const doFilterId = id ? 1 : 0;
+//   const doFilterPickup = pickup ? 1 : 0;
+//   const doFilterPickupFrom = pickupFrom ? 1 : 0;
+//   const doFilterPickupTo = pickupTo ? 1 : 0;
+//   const doFilterHub = hub ? 1 : 0;
+//   const doFilterHubFrom = hubFrom ? 1 : 0;
+//   const doFilterHubTo = hubTo ? 1 : 0;
+//   const doFilterStatus = status ? 1 : 0;
+//   if (doFilterHub) {
+//     return sql<Package & { hubFrom: number, hubTo: number}>`
+//       SELECT p.*, pp1.hub as "hubFrom", pp2.hub as "hubTo" FROM "packages" p
+//       JOIN "pickupPoints" pp1 ON p."pickupFrom" = pp1.id
+//       JOIN "pickupPoints" pp2 ON p."pickupTo" = pp2.id 
+//       WHERE
+//         (pp1."hub" = ${hubFrom} OR pp2."hub" = ${hubTo}) AND
+//         (${doFilterId} = 0 OR "id" = ${id}) AND
+//         (${doFilterStatus} = 0 OR "status" = ${status})
+//       ORDER BY "transitDate" DESC
+//     `.then((res) => res.rows.map(reformatPackage));
+//   } else if (doFilterPickup) {
+//     return sql<Package>`
+//       SELECT p.* FROM "packages" p
+//       WHERE
+//         (p."pickupFrom" = ${pickup} OR p."pickupTo" = ${pickup}) AND
+//         (${doFilterId} = 0 OR "id" = ${id}) AND
+//         (${doFilterStatus} = 0 OR "status" = ${status})
+//       ORDER BY "transitDate" DESC
+//     `.then((res) => res.rows.map(reformatPackage));
+//   } else if (doFilterHubFrom) {
+//     if (doFilterHubTo) {
+//       return sql<Package>`
+//         SELECT p.* FROM "packages" p
+//         JOIN "pickupPoints" pp1 ON p."pickupFrom" = pp1.id
+//         JOIN "pickupPoints" pp2 ON p."pickupTo" = pp2.id 
+//         WHERE
+//           pp1."hub" = ${hubFrom} AND pp2."hub" = ${hubTo} AND
+//           (${doFilterId} = 0 OR "id" = ${id}) AND
+//           (${doFilterStatus} = 0 OR "status" = ${status})
+//         ORDER BY "transitDate" DESC
+//       `.then((res) => res.rows.map(reformatPackage));
+//     } else {
+//       return sql<Package>`
+//         SELECT p.* FROM "packages" p
+//         JOIN "pickupPoints" pp1 ON p."pickupFrom" = pp1.id
+//         WHERE
+//           pp1."hub" = ${hubFrom} AND
+//           (${doFilterPickupTo} = 0 OR "pickupTo" = ${pickupTo}) AND
+//           (${doFilterId} = 0 OR "id" = ${id})
+//           (${doFilterStatus} = 0 OR "status" = ${status})
+//         ORDER BY "transitDate" DESC
+//       `.then((res) => res.rows.map(reformatPackage));
+//     }
+//   } else {
+//     if (doFilterHubTo) {
+//       return sql<Package>`
+//         SELECT p.* FROM "packages" p
+//         JOIN "pickupPoints" pp2 ON p."pickupTo" = pp2.id 
+//         WHERE
+//           pp2."hub" = ${hubTo} AND
+//           (${doFilterPickupFrom} = 0 OR "pickupFrom" = ${pickupFrom}) AND
+//           (${doFilterId} = 0 OR "id" = ${id}) AND
+//           (${doFilterStatus} = 0 OR "status" = ${status})
+//         ORDER BY "transitDate" DESC
+//       `.then((res) => res.rows.map(reformatPackage));
+//     } else {
+//       return sql<Package>`
+//         SELECT p.* FROM "packages"
+//         WHERE 
+//           (${doFilterPickupFrom} = 0 OR "pickupFrom" = ${pickupFrom}) AND
+//           (${doFilterPickupTo} = 0 OR "pickupTo" = ${pickupTo}) AND
+//           (${doFilterId} = 0 OR "id" = ${id}) AND
+//           (${doFilterStatus} = 0 OR "status" = ${status})
+//         ORDER BY "transitDate" DESC
+//       `.then((res) => res.rows.map(reformatPackage));
+//     }
+//   }
+// }
 
-export async function getPackageById(id: number) {
-  return sql<Package>`
-    SELECT * FROM "packages" WHERE "id" = ${id}
-  `.then((res) => reformatPackage(res.rows[0]));
-}
+// export async function getPackageById(id: number) {
+//   return sql<Package>`
+//     SELECT * FROM "packages" WHERE "id" = ${id}
+//   `.then((res) => reformatPackage(res.rows[0]));
+// }
 
-export async function addOrderToPackage(orderId: number, packageId: number) {
-  return Promise.all([sql`
-    UPDATE "orders"
-    SET "package" = ${packageId}
-    WHERE "id" = ${orderId}
-  `, sql`
-    UPDATE "packages"
-    SET "quantity" = "quantity" + 1, "weight" = "weight" + (SELECT "weight" FROM "orders" WHERE "id" = ${orderId})
-    WHERE "id" = ${packageId}
-  `]);
-}
+// export async function addOrderToPackage(orderId: number, packageId: number) {
+//   return Promise.all([sql`
+//     UPDATE "orders"
+//     SET "package" = ${packageId}
+//     WHERE "id" = ${orderId}
+//   `, sql`
+//     UPDATE "packages"
+//     SET "quantity" = "quantity" + 1, "weight" = "weight" + (SELECT "weight" FROM "orders" WHERE "id" = ${orderId})
+//     WHERE "id" = ${packageId}
+//   `]);
+// }
 
-export async function setPackageStatus(id: number, status: string, transitDate?: Date) {
-  if (transitDate) {
-    const formattedTransitDate = transitDate.toISOString();
-    return sql`
-      UPDATE "packages"
-      SET "status" = ${status}, "transitDate" = ${formattedTransitDate}
-      WHERE "id" = ${id}
-    `;
-  } else {
-    return sql`
-      UPDATE "packages"
-      SET "status" = ${status}
-      WHERE "id" = ${id}
-    `;
-  }
-}
+// export async function setPackageStatus(id: number, status: string, transitDate?: Date) {
+//   if (transitDate) {
+//     const formattedTransitDate = transitDate.toISOString();
+//     return sql`
+//       UPDATE "packages"
+//       SET "status" = ${status}, "transitDate" = ${formattedTransitDate}
+//       WHERE "id" = ${id}
+//     `;
+//   } else {
+//     return sql`
+//       UPDATE "packages"
+//       SET "status" = ${status}
+//       WHERE "id" = ${id}
+//     `;
+//   }
+// }
 
-export async function packageDelivering1(id: number, transitDate: Date) {
-  const formattedTransitDate = transitDate.toISOString();
-  return sql`
-    UPDATE "packages"
-    SET "status" = 'delivering1', "transitDate" = ${formattedTransitDate}
-    WHERE "id" = ${id}
-  `.then(async () => sql`
-    UPDATE "orders"
-    SET "status" = 'delivering1'
-    WHERE "package" = ${id}
-  `);
-}
+// export async function packageDelivering1(id: number, transitDate: Date) {
+//   const formattedTransitDate = transitDate.toISOString();
+//   return sql`
+//     UPDATE "packages"
+//     SET "status" = 'delivering1', "transitDate" = ${formattedTransitDate}
+//     WHERE "id" = ${id}
+//   `.then(async () => sql`
+//     UPDATE "orders"
+//     SET "status" = 'delivering1'
+//     WHERE "package" = ${id}
+//   `);
+// }
 
-export async function packageDelivering2(id: number) {
-  return sql`
-    UPDATE "packages"
-    SET "status" = 'delivering2'
-    WHERE "id" = ${id}
-  `;
-}
+// export async function packageDelivering2(id: number) {
+//   return sql`
+//     UPDATE "packages"
+//     SET "status" = 'delivering2'
+//     WHERE "id" = ${id}
+//   `;
+// }
 
-export async function packageDelivering3(id: number) {
-  return sql`
-    UPDATE "packages"
-    SET "status" = 'delivering3'
-    WHERE "id" = ${id}
-  `;
-}
+// export async function packageDelivering3(id: number) {
+//   return sql`
+//     UPDATE "packages"
+//     SET "status" = 'delivering3'
+//     WHERE "id" = ${id}
+//   `;
+// }
 
-export async function packageDelivered(id: number, arrivalDate: Date) {
-  const formattedArrivalDate = arrivalDate.toISOString();
-  return sql`
-    UPDATE "packages"
-    SET "status" = 'delivered', "arrivalDate" = ${formattedArrivalDate}
-    WHERE "id" = ${id}
-  `.then(async () => sql`
-    UPDATE "orders"
-    SET "status" = 'delivering2'
-    WHERE "package" = ${id}
-  `);
-}
+// export async function packageDelivered(id: number, arrivalDate: Date) {
+//   const formattedArrivalDate = arrivalDate.toISOString();
+//   return sql`
+//     UPDATE "packages"
+//     SET "status" = 'delivered', "arrivalDate" = ${formattedArrivalDate}
+//     WHERE "id" = ${id}
+//   `.then(async () => sql`
+//     UPDATE "orders"
+//     SET "status" = 'delivering2'
+//     WHERE "package" = ${id}
+//   `);
+// }
 
 export async function createTransitHub({ name, location }: TransitHubData) {
   return sql`
     INSERT INTO "transitHubs" ("name", "location")
     VALUES (${name}, ${location})
   `.then(async () => console.log(await getTransitHubByName(name)));
+}
+
+export async function getIncomingOrdersByHub(hub: number) {
+  return sql<{ num: number }>`
+    SELECT COUNT(*) as "num" FROM "orders" o
+    JOIN "pickupPoints" pp ON o."pickupFrom" = pp."id"
+    WHERE pp."hub" = ${hub}
+  `.then((res) => res.rows[0].num);
+}
+
+export async function getOutgoingOrdersByHub(hub: number) {
+  return sql<{ num: number }>`
+    SELECT COUNT(*) as "num" FROM "orders" o
+    JOIN "pickupPoints" pp ON o."pickupTo" = pp."id"
+    WHERE pp."hub" = ${hub}
+  `.then((res) => res.rows[0].num);
+}
+
+export async function getAllTransitHubs() {
+  return sql<TransitHub>`
+    SELECT t.*,  FROM "transitHubs" t
+    JOIN "pickupPoints" p ON p."hub" = t."id"
+  `.then((res) => res.rows);
 }
 
 export async function getTransitHubById(id: number) {
@@ -471,6 +749,26 @@ export async function getPickupPointByName(name: string) {
   return sql<PickupPoint>`
     SELECT * FROM "pickupPoints" WHERE "name" = ${name}
   `.then((res) => res.rows[0]);
+}
+
+export async function getAllPickupPoints() {
+  return sql<PickupPoint>`
+    SELECT * FROM "pickupPoints"
+  `.then((res) => res.rows);
+}
+
+export async function getIncomingOrdersByPickupPoint(pickupPoint: number) {
+  return sql<{ num: number }>`
+    SELECT COUNT(*) as "num" FROM "orders" o
+    WHERE o."pickupTo" = ${pickupPoint}
+  `.then((res) => res.rows[0].num);
+}
+
+export async function getOutgoingOrdersByPickupPoint(pickupPoint: number) {
+  return sql<{ num: number }>`
+    SELECT COUNT(*) as "num" FROM "orders" o
+    WHERE o."pickupFrom" = ${pickupPoint}
+  `.then((res) => res.rows[0].num);
 }
 
 export async function getCustomersByPickupPoint(pickupPoint: number) {
