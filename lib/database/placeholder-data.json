@@ -1,6 +1,13 @@
 {
   "accounts": [
     {
+      "email": "director@example.com",
+      "password": "dir",
+      "name": "Nguyễn Mai Hiếu",
+      "phone": "0988888888",
+      "role": "director"
+    },
+    {
       "email": "customer1@example.com",
       "password": "password1",
       "name": "Nguyễn Khánh Sơn",
