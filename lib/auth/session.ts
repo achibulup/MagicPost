@@ -47,6 +47,7 @@ export async function signSession(session: Session) {
 export async function getUserProfile(req: Request) {
   noStore();
   const rawCookie = req.headers.get('cookie');
+  console.log(rawCookie);
   const cookies = rawCookie !== null ? parse(rawCookie) : {};
   const cookie = cookies['session-token'];
   if (!cookie) {

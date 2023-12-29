@@ -22,7 +22,12 @@ export async function GET(req: Request) {
   }
   if (!status) {
     const orders = await actions.getOrders({ shipper: user.id });
-    return NextResponse.json(orders);
+    const orders2 = await actions.getOrders({
+      pickupTo: user.pickupPoint,
+      status: 9
+    });
+    const mergedOrders = [...orders, ...orders2].sort((a, b) => b.sendDate.getTime() - a.sendDate.getTime());
+    return NextResponse.json(mergedOrders);
   } else if (status === 'transported') {
     const orders = await actions.getOrders({ 
       pickupTo: user.pickupPoint,

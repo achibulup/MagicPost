@@ -12,7 +12,8 @@ export async function GET(req: Request) {
       { status: 401 }
     );
   }
-  const pickupPoints = await Promise.all(
+  try {
+     const pickupPoints = await Promise.all(
     (await actions.getAllPickupPoints()).map(async (point) => {
       const [incoming, outgoing] = 
         await Promise.all([actions.getIncomingOrdersByPickupPoint(point.id),
@@ -29,4 +30,11 @@ export async function GET(req: Request) {
     })
   );
   return NextResponse.json({ pickupPoints, transitHubs });
+  } catch (err) {
+    console.log(err);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }

@@ -53,6 +53,12 @@ export async function POST(req: Request) {
     jsonObject[key] = value;
   }
   const { name, email, phone, role } = jsonObject as StaffForm;
+  if (!name || !email || !phone || !role) {
+    return NextResponse.json(
+      { error: 'Invalid data' },
+      { status: 400 }
+    );
+  }
   const check = await actions.getAccountByEmail(email);
   if (check) {
     return NextResponse.json(

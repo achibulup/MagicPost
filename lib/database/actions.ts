@@ -447,6 +447,8 @@ export async function getCancelledOrders(customer: number) {
 export async function getOrdersByHub(hub: number, kind?: 'incoming' | 'outgoing') {
   const acceptIncoming = (kind === 'incoming' || !kind) ? 1 : 0;
   const acceptOutgoing = (kind === 'outgoing' || !kind) ? 1 : 0;
+  console.log(hub)
+  console.log(acceptIncoming, acceptOutgoing);
   return sql<OrderWithHub>`
     SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
@@ -475,9 +477,7 @@ export async function setOrderStatus(id: number, status: number) {
 export async function setOrderShipper(id: number, shipper?: number | null) {
   return sql`
     UPDATE "orders"
-    SET 
-      "shipper" = ${shipper}
-      "status" = 10
+    SET "shipper" = ${shipper}, "status" = 10
     WHERE "id" = ${id}
   `;
 }
@@ -715,8 +715,7 @@ export async function getOutgoingOrdersByHub(hub: number) {
 
 export async function getAllTransitHubs() {
   return sql<TransitHub>`
-    SELECT t.*,  FROM "transitHubs" t
-    JOIN "pickupPoints" p ON p."hub" = t."id"
+    SELECT *  FROM "transitHubs"
   `.then((res) => res.rows);
 }
 

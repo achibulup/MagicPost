@@ -16,6 +16,7 @@ export async function GET(req: Request) {
     email: profile.email,
     role: profile.role,
     pickupPoint: profile.pickupPoint,
+    transitHub: profile.transitHub,
     phone: profile?.transitHub
   })
 }

@@ -24,6 +24,7 @@ export async function POST(req: Request, { params }: { params: { orderId: string
     if (order.status !== 3) {
       return NextResponse.json(
         { error: 'Invalid checkin' },
+        { status: 400 }
       );
     }
   }
@@ -31,6 +32,7 @@ export async function POST(req: Request, { params }: { params: { orderId: string
     if (order.status !== 5) {
       return NextResponse.json(
         { error: 'Invalid checkin' },
+        { status: 400 }
       );
     }
   }

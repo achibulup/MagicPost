@@ -24,13 +24,15 @@ export async function POST(req: Request, { params }: { params: { orderId: string
     if (order.status !== 4) {
       return NextResponse.json(
         { error: 'Invalid checkin' },
+        { status: 400 }
       );
     }
   }
   if (order.hubTo === user.transitHub) {
     if (order.status !== 6) {
       return NextResponse.json(
-        { error: 'Invalid checkin' },
+        { error: 'Invalid checkout' },
+        { status: 400 }
       );
     }
   }

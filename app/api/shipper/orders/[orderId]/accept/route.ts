@@ -28,6 +28,7 @@ export async function POST(req: Request, { params }: { params: { orderId: string
     await actions.setOrderShipper(Number(params.orderId), user.id);
     return NextResponse.json({ success: true });
   } catch (err) {
+    console.log(err);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

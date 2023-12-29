@@ -23,6 +23,7 @@ export async function POST(req: Request, { params }: { params: { orderId: string
   if (order.pickupTo != user.pickupPoint || order.status !== 7) {
     return NextResponse.json(
       { error: 'Invalid checkin' },
+      { status: 400 }
     );
   }
   try {

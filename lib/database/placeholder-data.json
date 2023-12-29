@@ -110,7 +110,7 @@
       "password": "password3",
       "phone": "1234567890",
       "role": "shipper",
-      "pickupPoint": null,
+      "pickupPoint": "pickup C",
       "transitHub": null
     },
     {
@@ -119,7 +119,7 @@
       "password": "password3",
       "phone": "1234567890",
       "role": "shipper",
-      "pickupPoint": null,
+      "pickupPoint": "pickup B",
       "transitHub": null
     }
   ],
@@ -127,55 +127,29 @@
     {
       "id": 1,
       "weight": 10,
-      "sender": 1,
+      "sender": "customer1@example.com",
       "receiverNumber": "9876543210",
       "receiverAddress": "123 Main St",
       "pickupFrom": "pickup A",
       "pickupTo": "pickup C",
-      "package": 1,
       "charge": 100000,
       "sendDate": "2022-01-01",
       "arrivalDate": null,
-      "status": "delivering"
+      "status": 4
     },
     {
       "id": 2,
       "weight": 5,
-      "sender": 2,
+      "sender": "customer2@example.com",
       "receiverNumber": "1234567890",
       "receiverAddress": "456 Elm St",
       "pickupFrom": "pickup C",
       "pickupTo": "pickup B",
-      "package": 2,
       "charge": 50000,
       "sendDate": "2022-01-02",
       "arrivalDate": "2022-01-06",
       "shipper": "employee12@example.com",
-      "status": "delivered"
-    }
-  ],
-  "packages": [
-    {
-      "id": 1,
-      "quantity": 2,
-      "weight": 20,
-      "pickupFrom": "pickup A",
-      "pickupTo": "pickup C",
-      "transitDate": "2022-01-01",
-      "arrivalDate": "2022-01-05",
-      "shipper": "employee11@example.com",
-      "status": "delivering1"
-    },
-    {
-      "id": 2,
-      "quantity": 1,
-      "weight": 10,
-      "pickupFrom": "pickup C",
-      "pickupTo": "pickup B",
-      "transitDate": "2022-01-02",
-      "arrivalDate": "2022-01-06",
-      "shipper": "employee12@example.com",
-      "status": "delivered"
+      "status": 11
     }
   ],
   "pickupPoints": [

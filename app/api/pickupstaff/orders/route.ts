@@ -6,16 +6,17 @@ import type { OrderFilter } from '@/lib/database/actions';
 import { NextResponse } from 'next/server';
 
 type OrderPostData = {
-  sender: number;
+  sender: string;
   weight: number;
   receiverAddress: string;
   receiverNumber: string;
-  pickupTo: number;
+  pickupTo: string;
   charge: number;
 }
 
 export async function GET(req: Request) {
   const user = await getUserProfile(req);
+  console.log(user);
   if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -90,7 +91,7 @@ export async function POST(req: Request) {
     );
   }
   const contentType = req.headers.get('content-type');
-  if (!contentType || contentType.startsWith('multipart/form-data')) {
+  if (!contentType || !contentType.startsWith('multipart/form-data')) {
     return NextResponse.json(
       { error: 'Invalid data' },
       { status: 400 }
@@ -102,13 +103,29 @@ export async function POST(req: Request) {
     jsonObject[key] = value;
   }
   const data = jsonObject as OrderPostData;
+  const [sender, pickupTo] = await Promise.all([
+    actions.getAccountByEmail(data.sender),
+    actions.getPickupPointByName(data.pickupTo)
+  ]);
+  if (!sender) {
+    return NextResponse.json(
+      { error: 'Sender not found' },
+      { status: 400 }
+    );
+  }
+  if (!pickupTo) {
+    return NextResponse.json(
+      { error: 'Pickup point not found' },
+      { status: 400 }
+    );
+  }
   const orderData = {
-    sender: data.sender,
+    sender: sender.id,
     weight: data.weight,
     receiverAddress: data.receiverAddress,
     receiverNumber: data.receiverNumber,
     pickupFrom: user.pickupPoint,
-    pickupTo: data.pickupTo,
+    pickupTo: pickupTo.id,
     charge: data.charge,
     sendDate: new Date()
   }

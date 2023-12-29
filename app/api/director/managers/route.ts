@@ -46,6 +46,12 @@ export async function POST(req: Request) {
     jsonObject[key] = value;
   }
   const { name, email, phone, pickup, transit } = jsonObject as ManagerForm;
+  if (!name || !email || !phone) {
+    return NextResponse.json(
+      { error: 'Invalid data' },
+      { status: 400 }
+    );
+  }
   if (!pickup && !transit) {
     return NextResponse.json(
       { error: 'Invalid pickup point or transit hub' },
