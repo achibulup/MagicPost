@@ -44,16 +44,21 @@ export async function signSession(session: Session) {
 }
 
 
-export async function getUserProfile(req: Request) {
+export async function getUserProfile(req?: Request) {
   noStore();
-  const rawCookie = req.headers.get('cookie');
-  console.log(rawCookie);
-  const cookies = rawCookie !== null ? parse(rawCookie) : {};
-  const cookie = cookies['session-token'];
-  if (!cookie) {
+  const cookie = cookies().get('session-token');
+  // if (!ck) {
+  //   return undefined;
+  // }
+
+  // const rawCookie = req.headers.get('cookie');
+  // console.log(rawCookie);
+  // const cookies = rawCookie !== null ? parse(rawCookie) : {};
+  // const cookie = cookies['session-token'];
+  if (!cookie?.value) {
     return undefined;
   }
-  return verifySession(cookie);
+  return verifySession(cookie.value);
 }
 
 export async function setAuthCookie(session: Session) {
