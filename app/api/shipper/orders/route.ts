@@ -1,6 +1,6 @@
 import { getUserProfile } from '@/lib/auth/session';
 import * as actions from '@/lib/database/actions';
-import { Order } from '@/lib/database/definitions';
+import { Order } from '@/lib/backend/database/definitions';
 import { NextResponse } from 'next/server';
 
 type Result = Order[] | { error: string }; 

@@ -1,6 +1,6 @@
 import { Session } from '@/lib/auth/session';
 import * as actions from '@/lib/database/actions';
-import type { Order } from '@/lib/database/definitions';
+import type { Order } from '@/lib/backend/database/definitions';
 
 export function isVisibleTo(order: Order, staff: Session) {
   return (

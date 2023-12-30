@@ -1,6 +1,6 @@
 import { Session } from '@/lib/auth/session';
 import * as actions from '@/lib/database/actions';
-import type { Order } from '@/lib/database/definitions';
+import type { Order } from '@/lib/backend/database/definitions';
 
 export async function getOrderWithHubs(orderId: number, hub: number) {
   const orders = (await actions.getOrders({

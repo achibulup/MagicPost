@@ -1,4 +1,4 @@
-import type { Account } from '@/lib/database/definitions';
+import type { Account } from '@/lib/backend/database/definitions';
 import { NextResponse } from 'next/server';
 import * as actions from '@/lib/database/actions';
 import { getUserProfile } from '@/lib/auth/session';

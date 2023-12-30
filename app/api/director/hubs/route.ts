@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getUserProfile } from '@/lib/auth/session';
 import * as actions from '@/lib/database/actions';
-import type { AccountData } from '@/lib/database/definitions';
+import type { AccountData } from '@/lib/backend/database/definitions';
 
 
 export async function GET(req: Request) {

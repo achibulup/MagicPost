@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { sql } from '@vercel/postgres';
 import type { Account, Order, PickupPoint, TransitHub, AccountData, CustomerData, OrderData, PickupPointData, TransitHubData } from './definitions';
 
@@ -175,7 +175,8 @@ export async function setAccountStatus(id: number, status: string) {
   `;
 }
 
-type OrderWithHub = Order & {
+type OrderExtended = Order & {
+  senderName: string,
   hubFrom: number,
   hubTo: number,
   pickupFromName: string,
@@ -184,27 +185,27 @@ type OrderWithHub = Order & {
   hubToName: string,
 };
 
-type OrderExtended = OrderWithHub & {
+export type OrderExtended2 = OrderExtended & {
   statusString: string,
 };
 
-export function statusString(order: OrderWithHub) {
+export function statusString(order: OrderExtended) {
   if (order.status != Math.floor(order.status)) return 'Invalid';
   if (order.status === -1) return 'Cancelled';
-  if (order.status === 2) return 'PendingTransport';
+  if (order.status === 2) return 'Pending Transport';
   if (order.status === 3) return `Transporting from ${order.pickupFromName} to ${order.hubFromName}`;
   if (order.status === 4) return `At ${order.hubFromName}`;
   if (order.status === 5) return `Transporting from ${order.hubFromName} to ${order.hubToName}`;
   if (order.status === 6) return `At ${order.hubToName}`;
   if (order.status === 7) return `Transporting from ${order.hubToName} to ${order.pickupToName}`;
   if (order.status === 8) return 'Transported';
-  if (order.status === 9) return 'PendingDeliver';
+  if (order.status === 9) return 'Pending Deliver';
   if (order.status === 10) return 'Delivering';
   if (order.status === 11) return 'Delivered';
   return 'Invalid';
 }
 
-function reformatOrder(order: OrderWithHub): OrderExtended
+function reformatOrder(order: OrderExtended): OrderExtended2
 {
     return {
       ...order, 
@@ -238,9 +239,10 @@ export async function createOrder({
 }
 
 export async function getOrderById(id: number) {
-  return sql<OrderWithHub>`
-    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+  return sql<OrderExtended>`
+    SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
+    JOIN "accounts" s ON s."id" = o."sender"
     JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
     JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
     JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
@@ -249,7 +251,7 @@ export async function getOrderById(id: number) {
   `.then((res) => (res.rows[0] && reformatOrder(res.rows[0])) as OrderExtended | undefined);
 }
 
-export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderWithHub)[]> {
+export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderExtended)[]> {
   const { id, sender, receiverNumber, receiverAddress, hub, hubFrom, hubTo, pickup, pickupFrom, pickupTo, shipper, status } = filter;
   const doFilterId = id !== undefined ? 1 : 0;
   const doFilterSender = sender !== undefined ? 1 : 0;
@@ -265,9 +267,10 @@ export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderW
   const doFilterStatus = status !== undefined ? 1 : 0;
   console.log(doFilterId, doFilterSender, doFilterReceiverNumber, doFilterReceiverAddress, doFilterHub, doFilterHubFrom, doFilterHubTo, doFilterPickup, doFilterPickupFrom, doFilterPickupTo, doFilterShipper, doFilterStatus);
   if (doFilterHub) {
-    return sql<OrderWithHub>`
-      SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    return sql<OrderExtended>`
+      SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
       FROM "orders" o
+      JOIN "accounts" s ON s."id" = o."sender"
       JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
       JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
       JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
@@ -279,13 +282,14 @@ export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderW
         (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
         (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
         (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
-        (${doFilterStatus} = 0 OR "status" = ${status})
+        (${doFilterStatus} = 0 OR o."status" = ${status})
       ORDER BY "sendDate" DESC
     `.then((res) => res.rows.map(reformatOrder));
   } else if (doFilterPickup) {
-    return sql<OrderWithHub>`
-    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+    return sql<OrderExtended>`
+    SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
+    JOIN "accounts" s ON s."id" = o."sender"
     JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
     JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
     JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
@@ -297,15 +301,16 @@ export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderW
         (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
         (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
         (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
-        (${doFilterStatus} = 0 OR "status" = ${status})
+        (${doFilterStatus} = 0 OR o."status" = ${status})
       ORDER BY "sendDate" DESC
     `.then((res) => res.rows.map(reformatOrder));
   } else {
     if (doFilterHubFrom) {
       if (doFilterHubTo) {
-        return sql<OrderWithHub>`
-          SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+        return sql<OrderExtended>`
+          SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
           FROM "orders" o
+          JOIN "accounts" s ON s."id" = o."sender"
           JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
           JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
           JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
@@ -317,13 +322,14 @@ export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderW
             (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
             (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
             (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
-            (${doFilterStatus} = 0 OR "status" = ${status})
+            (${doFilterStatus} = 0 OR o."status" = ${status})
           ORDER BY "sendDate" DESC
         `.then((res) => res.rows.map(reformatOrder));
       } else {
-        return sql<OrderWithHub>`
-          SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+        return sql<OrderExtended>`
+          SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
           FROM "orders" o
+          JOIN "accounts" s ON s."id" = o."sender"
           JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
           JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
           JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
@@ -336,15 +342,16 @@ export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderW
             (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
             (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
             (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
-            (${doFilterStatus} = 0 OR "status" = ${status})
+            (${doFilterStatus} = 0 OR o."status" = ${status})
           ORDER BY "sendDate" DESC
         `.then((res) => res.rows.map(reformatOrder));
       }
     } else {
       if (doFilterHubTo) {
-        return sql<OrderWithHub>`
-          SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+        return sql<OrderExtended>`
+          SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
           FROM "orders" o
+          JOIN "accounts" s ON s."id" = o."sender"
           JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
           JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
           JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
@@ -357,13 +364,14 @@ export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderW
             (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
             (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
             (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
-            (${doFilterStatus} = 0 OR "status" = ${status})
+            (${doFilterStatus} = 0 OR o."status" = ${status})
           ORDER BY "sendDate" DESC
         `.then((res) => res.rows.map(reformatOrder));
       } else {
-        return sql<OrderWithHub>`
-          SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+        return sql<OrderExtended>`
+          SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
           FROM "orders" o
+          JOIN "accounts" s ON s."id" = o."sender"
           JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
           JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
           JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
@@ -376,7 +384,7 @@ export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderW
             (${doFilterReceiverNumber} = 0 OR "receiverNumber" = ${receiverNumber}) AND
             (${doFilterReceiverAddress} = 0 OR "receiverAddress" = ${receiverAddress}) AND
             (${doFilterShipper} = 0 OR "shipper" = ${shipper}) AND
-            (${doFilterStatus} = 0 OR "status" = ${status})
+            (${doFilterStatus} = 0 OR o."status" = ${status})
           ORDER BY "sendDate" DESC
         `.then((res) => res.rows.map(reformatOrder));
       }
@@ -385,61 +393,65 @@ export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderW
 }
 
 export async function getTransportingOrders(customer: number) {
-  return sql<OrderWithHub>`
-    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+  return sql<OrderExtended>`
+    SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
+    JOIN "accounts" s ON s."id" = o."sender"
     JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
     JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
     JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
     JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
     WHERE
       "sender" = ${customer} AND
-      "status" < 9 AND "status" > 1
+      o."status" < 9 AND o."status" > 1
     ORDER BY "sendDate" DESC
   `.then((res) => res.rows.map(reformatOrder));
 }
 
 export async function getDeliveringOrders(customer: number) {
-  return sql<OrderWithHub>`
-    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+  return sql<OrderExtended>`
+    SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
+    JOIN "accounts" s ON s."id" = o."sender"
     JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
     JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
     JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
     JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
     WHERE
       "sender" = ${customer} AND
-      "status" < 11 AND "status" > 8
+      o."status" < 11 AND o."status" > 8
     ORDER BY "sendDate" DESC
   `.then((res) => res.rows.map(reformatOrder));
 }
 
 export async function getDeliveredOrders(customer: number) {
-  return sql<OrderWithHub>`
-    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+  return sql<OrderExtended>`
+    SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
+    JOIN "accounts" s ON s."id" = o."sender"
     JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
     JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
     JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
     JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
     WHERE
       "sender" = ${customer} AND
-      "status" = 11
+      o."status" = 11
     ORDER BY "sendDate" DESC
   `.then((res) => res.rows.map(reformatOrder));
 }
 
 export async function getCancelledOrders(customer: number) {
-  return sql<OrderWithHub>`
-    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+  return sql<OrderExtended>`
+    SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
+    JOIN "accounts" s ON s."id" = o."sender"
     JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
     JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
     JOIN "transitHubs" h1 ON h1."id" = pp1."hub"
     JOIN "transitHubs" h2 ON h2."id" = pp2."hub"
     WHERE
       "sender" = ${customer} AND
-      "status" = -1
+      o."status" = -1
     ORDER BY "sendDate" DESC
   `.then((res) => res.rows.map(reformatOrder));
 }
@@ -449,9 +461,10 @@ export async function getOrdersByHub(hub: number, kind?: 'incoming' | 'outgoing'
   const acceptOutgoing = (kind === 'outgoing' || !kind) ? 1 : 0;
   console.log(hub)
   console.log(acceptIncoming, acceptOutgoing);
-  return sql<OrderWithHub>`
-    SELECT o.*, pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
+  return sql<OrderExtended>`
+    SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
+    JOIN "accounts" s ON s."id" = o."sender"
     JOIN "pickupPoints" pp1 ON o."pickupFrom" = pp1."id"
     JOIN "pickupPoints" pp2 ON o."pickupTo" = pp2."id"
     JOIN "transitHubs" h1 ON h1."id" = pp1."hub"

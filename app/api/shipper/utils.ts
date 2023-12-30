@@ -1,4 +1,4 @@
-import type { Order } from "@/lib/database/definitions";
+import type { Order } from "@/lib/backend/database/definitions";
 import type { Session } from "@/lib/auth/session";
 
 export function visibleToShipper(order: Order, user: Session) {

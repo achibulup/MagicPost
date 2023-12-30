@@ -2,7 +2,7 @@ import { getUserProfile } from '@/lib/auth/session';
 import * as actions from '@/lib/database/actions';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { notFound } from 'next/navigation';
-import type { Order, Package } from '@/lib/database/definitions';
+import type { Order, Package } from '@/lib/backend/database/definitions';
 import { NextResponse } from 'next/server';
 
 
