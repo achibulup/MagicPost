@@ -1,7 +1,7 @@
 import type { Account } from '@/lib/backend/database/definitions';
 import { NextResponse } from 'next/server';
-import * as actions from '@/lib/database/actions';
-import { getUserProfile } from '@/lib/auth/session';
+import * as actions from '@/lib/backend/database/actions';
+import { getUserProfile } from '@/lib/backend/auth/session';
 
 export async function GET(req: Request, { params }: { params: { shipperId: string }}) {
   const user = await getUserProfile(req);

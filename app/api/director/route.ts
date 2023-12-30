@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { getUserProfile } from '@/lib/auth/session';
-import * as actions from '@/lib/database/actions';
+import { getUserProfile } from '@/lib/backend/auth/session';
+import * as actions from '@/lib/backend/database/actions';
 import type { AccountData } from '@/lib/backend/database/definitions';
 
 type ManagerForm = {

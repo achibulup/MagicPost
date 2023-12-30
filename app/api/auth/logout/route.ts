@@ -1,6 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import type { Session } from '@/lib/auth/session';
-import { authenticate, clearAuthCookie, getUserProfile } from '@/lib/auth/session';
+import type { Session } from '@/lib/backend/auth/session';
+import { authenticate, clearAuthCookie, getUserProfile } from '@/lib/backend/auth/session';
 import { NextResponse } from 'next/server';
 
 type ResponseData = {

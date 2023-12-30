@@ -1,5 +1,5 @@
-import { Session } from '@/lib/auth/session';
-import * as actions from '@/lib/database/actions';
+import { Session } from '@/lib/backend/auth/session';
+import * as actions from '@/lib/backend/database/actions';
 import type { Order } from '@/lib/backend/database/definitions';
 
 export function isVisibleTo(order: Order, staff: Session) {

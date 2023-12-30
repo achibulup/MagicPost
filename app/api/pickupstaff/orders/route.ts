@@ -1,8 +1,8 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { notFound } from 'next/navigation';
-import { getUserProfile } from '@/lib/auth/session';
-import * as actions from '@/lib/database/actions';
-import type { OrderFilter } from '@/lib/database/actions';
+import { getUserProfile } from '@/lib/backend/auth/session';
+import * as actions from '@/lib/backend/database/actions';
+import type { OrderFilter } from '@/lib/backend/database/actions';
 import { NextResponse } from 'next/server';
 
 type OrderPostData = {

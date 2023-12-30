@@ -1,5 +1,5 @@
-import { getUserProfile } from '@/lib/auth/session';
-import * as actions from '@/lib/database/actions';
+import { getUserProfile } from '@/lib/backend/auth/session';
+import * as actions from '@/lib/backend/database/actions';
 import type { Order } from '@/lib/backend/database/definitions';
 import { NextResponse } from 'next/server';
 import { getOrderWithHubs, isVisibleTo } from '../../../utils';

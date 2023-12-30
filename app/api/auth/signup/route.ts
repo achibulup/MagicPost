@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import * as actions from '@/lib/database/actions';
+import * as actions from '@/lib/backend/database/actions';
 
 type SignupForm = {
     email: string;

@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
-import { setAuthCookie } from '@/lib/auth/session';
-import * as actions from '@/lib/database/actions';
-import type { Session } from '@/lib/auth/session';
-import { authenticate, clearAuthCookie, getUserProfile } from '@/lib/auth/session';
+import { setAuthCookie } from '@/lib/backend/auth/session';
+import * as actions from '@/lib/backend/database/actions';
+import type { Session } from '@/lib/backend/auth/session';
+import { authenticate, clearAuthCookie, getUserProfile } from '@/lib/backend/auth/session';
 
 type LoginForm = {
     email: string;

@@ -1,5 +1,5 @@
-import { getUserProfile } from '@/lib/auth/session';
-import * as actions from '@/lib/database/actions';
+import { getUserProfile } from '@/lib/backend/auth/session';
+import * as actions from '@/lib/backend/database/actions';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { notFound } from 'next/navigation';
 import type { Order, Package } from '@/lib/backend/database/definitions';
