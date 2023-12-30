@@ -1,7 +1,7 @@
 'use client';
 
 import { ReactNode, useEffect, useReducer, useState } from 'react';
-import { OrderInfo, acceptOrder, confirmOrder, fetchOrders } from './actions';
+import { OrderInfo, acceptOrder, cancelOrder, confirmOrder, fetchOrders } from './actions';
 import { BasicTable, BasicDesktopTable } from '../common/table';
 import Skeleton from './skeletons';
 import type { Tab } from './actions';
@@ -13,7 +13,7 @@ export const revalidate = 1;
 
 export default function ShippersTable({ tab }: { tab?: Tab }) {
   console.log('ShippersTable');
-  const columnTitles = ['Address', 'Send date', 'Status', 'Charge'];
+  const columnTitles = ['Address', 'Send date', 'Status'];
   if (!tab || ['ready', 'delivering'].includes(tab)) columnTitles.push('Action');
   const skeleton = <Skeleton 
     columns={columnTitles} 
@@ -34,7 +34,9 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
     acceptOrder(order.id).then((result) => {
       if (result) {
         order.status = 'Delivering';
-        setOrders(filterOrders(orders!, tab));
+        const newOrders = filterOrders(orders!, tab);
+        console.log(newOrders);
+        setOrders(newOrders);
       }
     });
   }
@@ -42,15 +44,19 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
     confirmOrder(order.id).then((result) => {
       if (result) {
         order.status = 'Delivered';
-        setOrders(filterOrders(orders!, tab));
+        const newOrders = filterOrders(orders!, tab);
+        console.log(newOrders);
+        setOrders(newOrders);
       }
     });
   }
   const handleCancel = (order: OrderInfo) => {
-    acceptOrder(order.id).then((result) => {
+    cancelOrder(order.id).then((result) => {
       if (result) {
         order.status = 'Cancelled';
-        setOrders(filterOrders(orders!, tab));
+        const newOrders = filterOrders(orders!, tab);
+        console.log(newOrders);
+        setOrders(newOrders);
       }
     });
   }
@@ -81,10 +87,10 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
                   </BasicButton> 
                 ) : order.status === 'Delivering' ? (
                   <>
-                    <BasicButton onClick={handleDeliver.bind(null, order)}>
+                    <BasicButton key={1} onClick={handleDeliver.bind(null, order)}>
                       <DeliveredIcon/>
                     </BasicButton> 
-                    <BasicButton onClick={handleCancel.bind(null, order)}>
+                    <BasicButton key={2} onClick={handleCancel.bind(null, order)}>
                       <DeleteIcon/>
                     </BasicButton> 
                   </>
@@ -100,10 +106,6 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
                 <p className="text-xs">Status</p>
                 <p className="font-medium">{order.status}</p>
               </div>
-              <div className="flex w-1/2 flex-col">
-                <p className="text-xs">Charge</p>
-                <p className="font-medium">{order.charge}</p>
-              </div>
             </div>
           </div>
         ))}
@@ -116,7 +118,6 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
               order.receiverAddress,
               order.sendDate,
               order.status,
-              order.charge,
             ] as ReactNode[]
           };
           if (!tab || ['ready', 'delivering'].includes(tab)) {
@@ -129,12 +130,12 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
               );
             } else if (order.status === 'Delivering') {
               actions.push(
-                <BasicButton onClick={handleDeliver.bind(null, order)}>
+                <BasicButton key={1} onClick={handleDeliver.bind(null, order)}>
                   <DeliveredIcon/>
                 </BasicButton> 
               );
               actions.push(
-                <BasicButton onClick={handleCancel.bind(null, order)}>
+                <BasicButton key={2} onClick={handleCancel.bind(null, order)}>
                   <DeleteIcon/>
                 </BasicButton> 
               );
@@ -150,5 +151,5 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
 
 function filterOrders(orders: OrderInfo[], tab?: Tab) {
   if (!tab) return [...orders];
-  return orders.filter((order) => order.status === tab);
+  return orders.filter((order) => order.status.toLowerCase() === tab);
 }

@@ -70,5 +70,5 @@ export async function cancelOrder(id: number) {
   });
   if (result.status === 200) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error(JSON.stringify(await result.json()));
 }
