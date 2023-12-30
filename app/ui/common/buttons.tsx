@@ -40,7 +40,7 @@ export function BasicButton<T extends ButtonProps>({ children, className, ...res
   return (
     <button 
       {...rest}
-      className={clsx("rounded-md border p-2 hover:bg-gray-100", className)}>
+      className={clsx("rounded-md border p-1 hover:bg-gray-100", className)}>
       {children}
     </button>
   );

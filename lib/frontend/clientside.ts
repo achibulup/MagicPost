@@ -16,8 +16,3 @@ export async function logout() {
     method: 'POST',
   });
 }
-
-export function useRerender() {
-  const [_, force] = useReducer((x) => x + 1, 0);
-  return force;
-}
