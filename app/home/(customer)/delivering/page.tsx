@@ -1,12 +1,19 @@
-import React from 'react'
-import CustomersTable from '@/app/ui/table'
+import React, { Suspense } from 'react'
+import CustomersTable from '@/app/ui/customer/table'
+import { TableSkeleton } from '@/app/ui/customer/skeletons'
+import { lusitana } from '@/app/ui/fonts';
+import Search from '@/app/ui/search';
 
-export default function CustomerPage() {
+export default async function CustomerPage() {
   return (
     <div className="w-full">
-      <p>Delivering Page</p>
-      {/* <CustomersTable customers={[{'id': '12', 'name': 'somename', 'email': '@@'}, 
-              {'id': '11', 'name': 'hey you', 'email': '@@@'}]} /> */}
+      <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
+        Delivering orders
+      </h1>
+      <Search placeholder="Search orders..." />
+      <Suspense fallback={<TableSkeleton columns={["Address", "Send date", "Status", "Charge"]}/>}>
+        <CustomersTable tab="delivering"/>
+      </Suspense>
     </div>
   )
 }

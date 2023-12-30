@@ -1,16 +1,26 @@
 import Link from 'next/link';
-import CustomerNavLinks from '@/app/ui/customer/customer-nav-links';
+import CustomerNavLinks from '@/app/ui/customer/nav-links';
 import LogoutForm from '@/app/ui/logout-form';
 import MagicPostLogo from '@/app/ui/mgpt-logo';
+import { getUserProfile } from '@/lib/auth/session';
+import { notFound, redirect } from 'next/navigation';
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const session = await getUserProfile();
+  if (!session) {
+    redirect('/login');
+  }
+  if (session?.role !== 'customer') {
+    notFound();
+  }
   return (
     <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
       <div className="w-full flex-none md:w-64">
         <div className="flex h-full flex-col px-3 py-4 md:px-2">
           <Link
             className="mb-2 flex h-20 items-end justify-start rounded-md bg-blue-600 p-4 md:h-40"
-            href="/"
+            href="/home"
           >
             <div className="w-32 text-white md:w-40">
               <MagicPostLogo />
