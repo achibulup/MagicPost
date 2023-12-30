@@ -31,7 +31,7 @@ export async function GET(req: Request) {
   );
   return NextResponse.json({ pickupPoints, transitHubs });
   } catch (err) {
-    console.log(err);
+    // console.log(err);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

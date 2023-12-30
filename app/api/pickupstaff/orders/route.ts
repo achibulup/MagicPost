@@ -16,7 +16,7 @@ type OrderPostData = {
 
 export async function GET(req: Request) {
   const user = await getUserProfile(req);
-  console.log(user);
+  // console.log(user);
   if (!user || user.role !== 'staff' || user.pickupPoint == null) {
     return NextResponse.json(
       { error: 'Unauthorized' },

@@ -12,7 +12,7 @@ type LoginForm = {
 export async function POST(req: Request) {
     const content_type = req.headers.get('content-type');
     if (!content_type || !content_type.startsWith('multipart/form-data')) {
-        console.log(content_type);
+        // console.log(content_type);
         return NextResponse.json({ error: 'Invalid data'}, { status: 400 });
     }
     const formdata = await req.formData();

@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req: Request) {
   const user = await getUserProfile(req);
-  console.log(user);
+  // console.log(user);
   if (!user || user.role !== 'customer') {
     return NextResponse.json(
       { error: 'Unauthorized' },
@@ -20,6 +20,7 @@ export async function GET(req: Request) {
       { status: 400 }
     );
   }
+  // console.log(status);
   if (!status) {
     const orders = await actions.getOrders({ sender: user.id });
     return NextResponse.json(orders);
