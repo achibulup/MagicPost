@@ -42,5 +42,6 @@ export async function fetchOrders(tab?: Tab) {
   noStore();
   // console.log(tab);
   const result = await fetch(`http://localhost:3000/api/orders?${tab ? `status=${tab}` : ''}`);
+  if (result.status !== 200) throw new Error(await result.json());
   return (await result.json() as OrderExtended2[]).map(formatData);
 }
