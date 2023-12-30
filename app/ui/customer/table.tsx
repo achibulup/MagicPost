@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useReducer, useState } from 'react';
-import { OrderInfo, fetchOrders } from './data';
+import { OrderInfo, fetchOrders } from './actions';
 import { BasicTable, BasicDesktopTable } from '../common/table';
 import Skeleton from './skeletons';
-import type { Tab } from './data';
+import type { Tab } from './actions';
 
 export const revalidate = 1;
 
