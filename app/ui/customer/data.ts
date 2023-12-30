@@ -1,8 +1,6 @@
 import { unstable_noStore as noStore } from 'next/cache'
-import { cookies } from 'next/headers';
-import { fetchWithCookies } from '@/lib/frontend/utils';
-import type { OrderExtended2 } from '@/lib/database/actions';
-import { cache } from 'react';
+// import { fetchWithCookies } from '@/lib/frontend/serverside';
+import type { OrderExtended2 } from '@/lib/backend/database/actions';
 
 type OrderInfo = {
   id: number;
@@ -43,6 +41,6 @@ function formatData(data: OrderExtended2): OrderInfo {
 export async function fetchOrders(tab?: Tab) {
   noStore();
   // console.log(tab);
-  const result = await fetchWithCookies(`http://localhost:3000/api/orders?${tab ? `status=${tab}` : ''}`);
+  const result = await fetch(`http://localhost:3000/api/orders?${tab ? `status=${tab}` : ''}`);
   return (await result.json() as OrderExtended2[]).map(formatData);
 }

@@ -1,23 +1,5 @@
-export function RowSkeleton({ ncolumns, nbuttons = 0 } : { ncolumns: number, nbuttons?: number }) {
-  return (
-    <tr className="w-full border-b border-gray-100 last-of-type:border-none [&:first-child>td:first-child]:rounded-tl-lg [&:first-child>td:last-child]:rounded-tr-lg [&:last-child>td:first-child]:rounded-bl-lg [&:last-child>td:last-child]:rounded-br-lg">
-      {Array(ncolumns).fill(undefined).map((_, index) => (
-        <td key={index} className="whitespace-nowrap px-3 py-3">
-          <div className="h-6 w-32 rounded bg-gray-100"></div>
-        </td>
-      ))}
-      
-      
-      <td className="whitespace-nowrap py-3 pl-6 pr-3">
-        <div className="flex justify-end gap-3">
-          {Array(nbuttons).fill(undefined).map((_, index) => (
-            <div key={index} className="h-6 w-6 rounded bg-gray-100"></div>
-          ))}
-        </div>
-      </td>
-    </tr>
-  );
-}
+import { TableSkeleton } from "../common/skeletons";
+
 
 export function MobileRowSkeleton() {
   return (
@@ -43,37 +25,11 @@ export function MobileRowSkeleton() {
   );
 }
 
-export function TableSkeleton({ columns, nbuttons = 0} : {
+export default function Skeleton({ columns, nbuttons = 0} : {
   columns: string[],
   nbuttons?: number
 }) {
   return (
-    <div className="mt-6 flow-root">
-      <div className="inline-block min-w-full align-middle">
-        <div className="rounded-lg bg-gray-50 p-2 md:pt-0">
-          <div className="md:hidden">
-            {Array(6).fill(undefined).map((_, index) => (
-              <MobileRowSkeleton key={index} />
-            ))}
-          </div>
-          <table className="hidden min-w-full text-gray-900 md:table">
-            <thead className="rounded-lg text-left text-sm font-normal">
-              <tr>
-                {columns.map((column) => (
-                  <th key={column} scope="col" className="px-4 py-5 font-medium">
-                    {column}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="bg-white">
-              {Array(6).fill(undefined).map((_, index) => (
-                <RowSkeleton key={index} ncolumns={columns.length} nbuttons={nbuttons} />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+    <TableSkeleton columns={columns} nbuttons={nbuttons} mobileSkeleton={MobileRowSkeleton} />
   );
 }

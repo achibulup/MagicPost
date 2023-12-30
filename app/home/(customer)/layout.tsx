@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import CustomerNavLinks from '@/app/ui/customer/nav-links';
-import LogoutForm from '@/app/ui/logout-form';
-import MagicPostLogo from '@/app/ui/mgpt-logo';
-import { getUserProfile } from '@/lib/auth/session';
+import { links } from '@/app/ui/customer/nav-links';
+import { NavLinks } from '@/app/ui/common/nav-links';
+import LogoutForm from '@/app/ui/common/logout-form';
+import MagicPostLogo from '@/app/ui/common/mgpt-logo';
+import { getUserProfile } from '@/lib/backend/auth/session';
 import { notFound, redirect } from 'next/navigation';
 
 
@@ -14,6 +15,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   if (session?.role !== 'customer') {
     notFound();
   }
+  console.log(NavLinks);
   return (
     <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
       <div className="w-full flex-none md:w-64">
@@ -27,7 +29,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
             </div>
           </Link>
           <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
-            <CustomerNavLinks />
+            <NavLinks links={links} />
             <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
             <LogoutForm />
           </div>
