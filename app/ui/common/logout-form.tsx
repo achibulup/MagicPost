@@ -1,21 +1,22 @@
 // import React from 'react';
 'use client'
 import { PowerIcon } from '@heroicons/react/24/outline';
+import { logout } from '@/lib/frontend/clientside';
+import { useRouter } from 'next/navigation';
 
 const LogoutForm = () => {
+  const router = useRouter();
   const handleLogout = async (event: { preventDefault: () => void; }) => {
     event.preventDefault(); // Prevent the default form submission
 
     try {
       // Perform the logout using the Fetch API
-      const response = await fetch("http://localhost:3001/api/logout");
-
-      if (response.ok) {
-        // Handle successful logout (redirect, update state, etc.)
-        console.log('Logout successful');
+      const response = await logout();
+      if (response.status === 200) {
+        router.refresh();
       } else {
         // Handle logout failure
-        console.error('Logout failed');
+        alert('Logout failed');
       }
     } catch (error) {
       console.error('Error during logout:', error);
@@ -24,9 +25,7 @@ const LogoutForm = () => {
 
   return (
     <form
-      onSubmit={async () => {
-        await fetch("localhost:3000/api/logout");
-      }}
+      onSubmit={handleLogout}
     >
       <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
         <PowerIcon className="w-6" />
