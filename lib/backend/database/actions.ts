@@ -199,7 +199,7 @@ export function statusString(order: OrderExtended) {
   if (order.status === 6) return `At ${order.hubToName}`;
   if (order.status === 7) return `Transporting from ${order.hubToName} to ${order.pickupToName}`;
   if (order.status === 8) return 'Transported';
-  if (order.status === 9) return 'Pending Deliver';
+  if (order.status === 9) return 'Ready';
   if (order.status === 10) return 'Delivering';
   if (order.status === 11) return 'Delivered';
   return 'Invalid';

@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     );
   }
   const status = new URL(req.url!).searchParams.get('status');
-  if (status && !['transported', 'delivering', 'delivered', 'cancelled'].includes(status)) {
+  if (status && !['ready', 'delivering', 'delivered', 'cancelled'].includes(status)) {
     return NextResponse.json(
       { error: 'Invalid status' },
       { status: 400 }
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     });
     const mergedOrders = [...orders, ...orders2].sort((a, b) => b.sendDate.getTime() - a.sendDate.getTime());
     return NextResponse.json(mergedOrders);
-  } else if (status === 'transported') {
+  } else if (status === 'ready') {
     const orders = await actions.getOrders({ 
       pickupTo: user.pickupPoint,
       status: 9
