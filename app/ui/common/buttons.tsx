@@ -10,7 +10,7 @@ interface ButtonProps {
   onClick?: () => void;
 }
 
-export function Button<T extends ButtonProps>({ children, className, ...rest }: T) {
+export function Button<T extends React.ComponentProps<"button">>({ children, className, ...rest }: T) {
   return (
     <button
       {...rest}

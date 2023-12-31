@@ -11,6 +11,7 @@ import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import { Button } from '@/app/ui/common/buttons';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 // import { useFormState, useFormStatus } from 'react-dom';
 
 export default function LoginForm() {
@@ -87,6 +88,10 @@ export default function LoginForm() {
           </div>
         </div>
         <LoginButton pending={[console.log('passing', pending) as any, pending][1]}/>
+        <div className="mt-4 text-center text-sm">
+          Don't have an account?{' '}
+          <Link className="text-blue-500" href="/signup">Sign up</Link>
+        </div>
         <div
           className="flex h-8 items-end space-x-1"
           aria-live="polite"
