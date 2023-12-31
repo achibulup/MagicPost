@@ -1,10 +1,17 @@
-import React from 'react'
+import React, { Suspense } from 'react'
+import { OrderTable } from '@/app/ui/admin/tables'
+import Skeleton from '@/app/ui/admin/skeletons'
+import { lusitana } from '@/app/ui/common/fonts';
+import Search from '@/app/ui/common/search';
 
-export default async function OrdersPage() {
+export default async function CustomerPage() {
   return (
-    <p>
-      The admin uses this page to view the
-      detailed information of the orders made
-    </p>
+    <div className="w-full">
+      <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
+        All Orders
+      </h1>
+      <Search placeholder="Search ..." />
+      <OrderTable/>
+    </div>
   )
 }

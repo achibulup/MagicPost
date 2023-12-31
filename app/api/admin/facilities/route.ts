@@ -5,7 +5,7 @@ import type { AccountData, PickupPoint, TransitHub } from '@/lib/backend/databas
 
 export type PickupPointInfo = {kind: 'pickup', incoming: number, outgoing: number} & PickupPoint;
 export type TransitHubInfo = {kind: 'hub', incoming: number, outgoing: number} & TransitHub;
-export type Hubs = { pickupPoints: PickupPointInfo[], transitHubs: TransitHubInfo[] }
+export type Facilities = (PickupPointInfo | TransitHubInfo)[];
 
 export async function GET(req: Request) {
   const user = await getUserProfile(req);
@@ -32,7 +32,7 @@ export async function GET(req: Request) {
       return { ...hub, incoming, outgoing, kind: 'hub' }
     })
   );
-  return NextResponse.json({ pickupPoints, transitHubs });
+  return NextResponse.json([...pickupPoints, ...transitHubs]);
   } catch (err) {
     // console.log(err);
     return NextResponse.json(

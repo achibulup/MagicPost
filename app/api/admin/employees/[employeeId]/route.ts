@@ -29,7 +29,7 @@ export async function GET(req: Request, { params }: { params: { managerId: strin
 
 export async function PATCH(req: Request, { params }: { params: { staffId: string }}) {
   const user = await getUserProfile(req);
-  if (!user || user.role !== 'manager' || user.transitHub == null) {
+  if (!user || user.role !== 'admin') {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
@@ -79,7 +79,3 @@ export async function PATCH(req: Request, { params }: { params: { staffId: strin
     );
   }
 } 
-
-// export async function DELETE(req: Request, { params }: { params: { staffId: string }}) {
-
-// }

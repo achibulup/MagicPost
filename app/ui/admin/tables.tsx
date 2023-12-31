@@ -1,64 +1,171 @@
 'use client';
 
 import { ReactNode, useEffect, useReducer, useState } from 'react';
-import { OrderInfo, } from './actions';
+import { fetchEmployees, fetchFacilities, fetchOrders } from './actions';
+import type { OrderInfo } from './actions';
 import { BasicTable, BasicDesktopTable } from '../common/table';
 import Skeleton from './skeletons';
-import type { Tab } from './actions';
 import { BasicButton } from '../common/buttons';
-import { EditIcon, DeleteIcon, DeliveringIcon, DeliveredIcon, OrdersIcon } from '../common/icons';
+import { EditIcon, DeleteIcon } from '../common/icons';
 import { useRerender } from '../common/hooks';
+import { useRouter } from 'next/navigation';
+import type { AccountExtended } from '@/lib/backend/database/actions';
+import type { Facilities } from '@/app/api/admin/facilities/route'
 
 export const revalidate = 1;
 
-export default function Table({ tab }: { tab?: Tab }) {
-  // console.log('ShippersTable');
-  const columnTitles = ['Id', 'Sender', 'Pickup from', 'Pickup to', 'Send date', 'Status', 'Action'];
-  // if (!tab || ['ready', 'delivering'].includes(tab)) columnTitles.push('Action');
+export function FacilityTable() {
+  const columnTitles = ['Facility', 'Incoming orders', 'Outgoing orders'];
+  const skeleton = <Skeleton columns={columnTitles} />;
+  const [facilites, setFacilites] = useState<Facilities | null>(null);
+  useEffect(() => {
+    (async()=>{
+      setFacilites(null);
+      const facilites = await fetchFacilities();
+      setFacilites(facilites);
+    })();
+  }, []);
+  // console.log(facilites);
+  return facilites == null ? skeleton :
+    <BasicTable>
+      <div className="md:hidden">
+        {facilites?.map((facility) => (
+          <div
+            key={facility.id}
+            className="mb-2 w-full rounded-md bg-white p-4"
+          >
+            <div className="flex items-center justify-between border-b pb-4">
+              <div>
+                <p className="text-sm text-gray-500">
+                  Facility
+                </p>
+                <div className="mb-2 flex items-center">
+                  <div className="flex items-center gap-3">
+                    <p>{facility.name}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex w-full items-center justify-between border-b py-5">
+              <div className="flex w-1/2 flex-col">
+                <p className="text-xs">Incoming orders</p>
+                <p className="font-medium">{facility.incoming}</p>
+              </div>
+              <div className="flex w-1/2 flex-col">
+                <p className="text-xs">Outgoing orders</p>
+                <p className="font-medium">{facility.outgoing}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      <BasicDesktopTable columnTitles={columnTitles} 
+        rows={facilites.map((facility) => ({
+          id: facility.id,
+          entries: [
+            facility.name,
+            facility.incoming,
+            facility.outgoing
+          ]
+        }))}
+      ></BasicDesktopTable>
+    </BasicTable>;
+}
+
+export function EmployeeTable() {
+  const columnTitles = ['Customer', 'At', 'Email', 'Phone', 'Action'];
   const skeleton = <Skeleton columns={columnTitles} nbuttons={1} />;
-  const [orders, setOrders] = useState<OrderInfo[] | null>(null);
+  const [employees, setEmployees] = useState<AccountExtended[] | null>(null);
   const [dep, revalidate] = useReducer((x) => x + 1, 0);
+  const router = useRouter();
   const rerender = useRerender();
   useEffect(() => {
     (async()=>{
-      setOrders(null);
-      const orders = await fetchOrders(tab);
-      setOrders(orders);
+      setEmployees(null);
+      const employees = await fetchEmployees();
+      setEmployees(employees);
     })();
   }, [dep]);
+  // console.log(employees);
+
+  const redirectToEditForm = (employeeId: number) => {
+    router.push(`/admin/employees/${employeeId}/edit`);
+  }
+
+  return (employees == null ? skeleton :
+    <BasicTable>
+      <table className="md:hidden w-full">
+        {employees?.map((employee) => (
+          <tr
+            key={employee.id}
+            className="flex justify-between mb-2 w-full rounded-md bg-white p-4"
+          >
+            <td className="items-center justify-between bemployee-b pb-4">
+              <div>
+                <p className="text-sm text-gray-500">
+                  Name
+                </p>
+                <div className="mb-2 flex items-center">
+                  <div className="flex items-center gap-3">
+                    <p>{employee.name}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col">
+                <p className="text-xs">Manager of</p>
+                <p className="font-medium">{employee.at}</p>
+              </div>
+            </td>
+            <td className="items-center justify-between bemployee-b py-5">
+              <div>
+                <p className="text-xs">Email</p>
+                <p className="font-medium">{employee.email}</p>
+              </div>
+              <div>
+                <p className="text-xs">Phone</p>
+                <p className="font-medium">{employee.phone}</p>
+              </div>
+            </td>
+            <td className="items-center justify-between bemployee-b py-5"> 
+              <div>
+                <BasicButton onClick={() => redirectToEditForm(employee.id)}>
+                  <EditIcon/>
+                </BasicButton> 
+              </div>
+            </td>
+          </tr>
+        ))}
+      </table>
+      <BasicDesktopTable columnTitles={columnTitles} 
+        rows={employees.map((employee, index) => ({
+          id: employee.id,
+          entries: [
+            employee.name,
+            employee.at,
+            employee.email,
+            employee.phone,
+            <BasicButton onClick={() => redirectToEditForm(employee.id)}>
+              <EditIcon/>
+            </BasicButton> 
+          ] as ReactNode[]
+        }))}
+      ></BasicDesktopTable>
+    </BasicTable>
+  );
+}
+
+export function OrderTable() {
+  const columnTitles = ['Sender', 'From', 'To', 'Send date', 'Status', 'Invoice'];
+  const skeleton = <Skeleton columns={columnTitles} />;
+  const [orders, setOrders] = useState<OrderInfo[] | null>(null);
+  useEffect(() => {
+    (async()=>{
+      setOrders(null);
+      const orders = await fetchOrders();
+      setOrders(orders);
+    })();
+  }, []);
   // console.log(orders);
-
-  const handleCheckin = (order: OrderInfo) => {
-    checkinOrder(order.id).then((result) => {
-      if (result) {
-        if (tab === 'incoming') {
-          orders?.splice(orders.indexOf(order), 1);
-          rerender();
-        } else {
-          order.statusNumber = 8;
-          order.status = 'Transported';
-          rerender();
-        }
-      }
-    });
-  }
-  const handleTransportCheckout = (order: OrderInfo) => {
-    checkoutTransportOrder(order.id).then((result) => {
-      if (result) {
-        orders?.splice(orders.indexOf(order), 1);
-        rerender();
-      }
-    });
-  }
-  const handleDeliveryCheckout = (order: OrderInfo) => {
-    checkoutDeliveryOrder(order.id).then((result) => {
-      if (result) {
-        orders?.splice(orders.indexOf(order), 1);
-        rerender();
-      }
-    });
-  }
-
   return (orders == null ? skeleton :
     <BasicTable>
       <div className="md:hidden">
@@ -70,17 +177,7 @@ export default function Table({ tab }: { tab?: Tab }) {
             <div className="flex items-center justify-between border-b pb-4">
               <div>
                 <p className="text-sm text-gray-500">
-                  Id
-                </p>
-                <div className="mb-2 flex items-center">
-                  <div className="flex items-center gap-3">
-                    <p>{order.id}</p>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">
-                  Sender
+                  Customer
                 </p>
                 <div className="mb-2 flex items-center">
                   <div className="flex items-center gap-3">
@@ -88,20 +185,9 @@ export default function Table({ tab }: { tab?: Tab }) {
                   </div>
                 </div>
               </div>
-              <div>
-                {order.statusNumber === 7 ? (
-                  <BasicButton onClick={handleCheckin.bind(null, order)}>
-                    <DeliveredIcon/>
-                  </BasicButton> 
-                ) : order.statusNumber === 8 ? (
-                  <BasicButton onClick={handleDeliveryCheckout.bind(null, order)}>
-                    <OrdersIcon/>
-                  </BasicButton> 
-                ) : order.statusNumber === 2 ? (
-                  <BasicButton onClick={handleTransportCheckout.bind(null, order)}>
-                    <DeliveringIcon/>
-                  </BasicButton> 
-                ) : undefined}
+              <div className="flex w-1/2 flex-col">
+                <p className="text-xs">Invoice</p>
+                <p className="font-medium">{order.charge}</p>
               </div>
             </div>
             <div className="flex w-full items-center justify-between border-b py-5">
@@ -128,58 +214,18 @@ export default function Table({ tab }: { tab?: Tab }) {
         ))}
       </div>
       <BasicDesktopTable columnTitles={columnTitles} 
-        rows={orders.map((order, index) => {
-          const row = {
-            id: order.id,
-            entries: [
-              order.id,
-              order.sender,
-              order.from,
-              order.to,
-              order.sendDate,
-              order.status,
-            ] as ReactNode[]
-          };
-          const actions = [];
-          if (order.statusNumber === 2) {
-            actions.push(
-              <BasicButton onClick={handleTransportCheckout.bind(null, order)}>
-                <DeliveringIcon/>
-              </BasicButton> 
-            );
-          } else if (order.statusNumber === 7) {
-            actions.push(
-              <BasicButton onClick={handleCheckin.bind(null, order)}>
-                <DeliveredIcon/>
-              </BasicButton> 
-            );
-          } else if (order.statusNumber === 8) {
-            actions.push(
-              <BasicButton onClick={handleDeliveryCheckout.bind(null, order)}>
-                <OrdersIcon/>
-              </BasicButton> 
-            );
-          }
-          row.entries.push(<>{actions}</>);
-          return row;
-        })}
+        rows={orders.map((order) => ({
+          id: order.id,
+          entries: [
+            order.sender,
+            order.from,
+            order.to,
+            order.sendDate,
+            order.status,
+            order.charge
+          ]
+        }))}
       ></BasicDesktopTable>
     </BasicTable>
   );
-}
-
-function filterOrders(orders: OrderInfo[], tab?: Tab) {
-  if (!tab) return orders.filter((order) => (
-    [2, 7, 8].includes(order.statusNumber)
-  ));
-  if (tab === 'incoming') return orders.filter((order) => (
-    order.statusNumber === 7
-  ));
-  if (tab === 'transported') return orders.filter((order) => (
-    order.statusNumber === 8
-  ));
-  if (tab === 'pending') return orders.filter((order) => (
-    order.statusNumber === 2
-  ));
-  throw new Error('Invalid tab');
 }

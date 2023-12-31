@@ -1,11 +1,10 @@
-import type { OrderExtended2 } from '@/lib/backend/database/actions';
+import type { OrderExtended2, AccountExtended } from '@/lib/backend/database/actions';
+import type { Facilities } from '@/app/api/admin/facilities/route';
 
-import type { Hubs, PickupPointInfo, TransitHubInfo } from '@/app/api/admin/hubs/route';
-
-type OrderInfo = {
+export type OrderInfo = {
   id: number;
   sender: string;
-  receiverAddress: string;
+  address: string;
   charge: number;
   status: string;
   sendDate: string;
@@ -13,25 +12,6 @@ type OrderInfo = {
   to: string;
   statusNumber: number;
 }
-
-type EmployeeInfo = {
-  id: number;
-  name: string;
-  phone: string;
-  email: string;
-  role: string;
-  pickupPoint: string;
-  transitHub: string;
-}
-
-type HubInfo = {
-  id: number;
-  name: string;
-  address: string;
-  
-}
-
-export type Tab = "pending" | "transported" | "incoming";
 
 function formatData(data: OrderExtended2): OrderInfo {
   const sendDate = new Date(data.sendDate);
@@ -49,7 +29,7 @@ function formatData(data: OrderExtended2): OrderInfo {
   return {
     id: data.id,
     sender: data.senderName,
-    receiverAddress: data.receiverAddress,
+    address: data.receiverAddress,
     charge: data.charge,
     status: data.statusString,
     sendDate: formattedSendDate,
@@ -62,13 +42,15 @@ function formatData(data: OrderExtended2): OrderInfo {
 export async function fetchOrders() {
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/orders`);
   if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
-  return (await result.json() as OrderExtended2[]).map(formatData);
+  const data = await result.json() as OrderExtended2[];
+  console.log(JSON.stringify(data, null, 2));
+  return data.map(formatData);
 }
 
 export async function fetchEmployees() {
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/employees`);
   if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
-  return await result.json();
+  return await result.json() as AccountExtended[];
 }
 
 export async function changeEmployee(employeeId: number, postform: FormData) {
@@ -81,8 +63,8 @@ export async function changeEmployee(employeeId: number, postform: FormData) {
   } else throw new Error(await result.json());
 }
 
-export async function fetchHubs() {
-  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/hubs`);
+export async function fetchFacilities() {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/facilities`);
   if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
-  return await result.json() as Hubs;
+  return await result.json() as Facilities;
 }

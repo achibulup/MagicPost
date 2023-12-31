@@ -1,6 +1,5 @@
 'use client';
 
-import type { OrderPostData } from '@/app/api/pickupstaff/orders/route';
 import { Button } from '@/app/ui/common/buttons';
 import { createOrder } from '@/app/ui/pickupstaff/actions';
 import { useState } from 'react';

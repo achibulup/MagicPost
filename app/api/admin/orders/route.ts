@@ -20,6 +20,6 @@ export async function GET(req: Request) {
       { status: 401 }
     );
   }
-  const orders = actions.getOrders();
+  const orders = await actions.getOrders();
   return NextResponse.json(orders);
 }
