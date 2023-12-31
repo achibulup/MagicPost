@@ -37,11 +37,10 @@ function formatData(data: OrderExtended2): OrderInfo {
     sendDate: formattedSendDate
   };
 }
-
 export async function fetchOrders(tab?: Tab) {
   noStore();
   // console.log(tab);
-  const result = await fetch(`http://localhost:3000/api/orders?${tab ? `status=${tab}` : ''}`);
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/orders?${tab ? `status=${tab}` : ''}`);
   if (result.status !== 200) throw new Error(await result.json());
   return (await result.json() as OrderExtended2[]).map(formatData);
 }
