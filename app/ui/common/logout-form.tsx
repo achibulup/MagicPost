@@ -11,8 +11,8 @@ const LogoutForm = () => {
 
     try {
       // Perform the logout using the Fetch API
-      const response = await logout();
-      if (response.status === 200) {
+      const result = await logout();
+      if (Math.floor(result.status / 100) === 2) {
         router.refresh();
       } else {
         // Handle logout failure

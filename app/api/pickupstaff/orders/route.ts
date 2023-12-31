@@ -5,7 +5,7 @@ import * as actions from '@/lib/backend/database/actions';
 import type { OrderFilter } from '@/lib/backend/database/actions';
 import { NextResponse } from 'next/server';
 
-type OrderPostData = {
+export type OrderPostData = {
   sender: string;
   weight: number;
   receiverAddress: string;
@@ -24,14 +24,14 @@ export async function GET(req: Request) {
     );
   }
   const url = new URL(req.url!);
-  const kind = url.searchParams.get('kind'); 
-  if (kind && !['incoming', 'outgoing', 'pending-transport', 'pending-delivery'].includes(kind)) {
+  const status = url.searchParams.get('status'); 
+  if (status && !['incoming', 'outgoing', 'pending-transport', 'pending-delivery'].includes(status)) {
     return NextResponse.json(
-      { error: 'Invalid kind' },
+      { error: 'Invalid status' },
       { status: 400 }
     );
   }
-  if (!kind) {
+  if (!status) {
     const [pendingTransport, incoming, pendingDelivery] = await Promise.all([
       actions.getOrders({
         pickupFrom: user.pickupPoint,
@@ -48,13 +48,13 @@ export async function GET(req: Request) {
     ]);
     const orders = [...pendingTransport, ...incoming, ...pendingDelivery];
     return NextResponse.json(orders);
-  } else if (kind === 'incoming') {
+  } else if (status === 'incoming') {
     const orders = await actions.getOrders({
       pickupTo: user.pickupPoint,
       status: 7
     });
     return NextResponse.json(orders);
-  } else if (kind === 'outgoing') {
+  } else if (status === 'outgoing') {
     const [pendingTransport, pendingDelivery] = await Promise.all([
       actions.getOrders({
         pickupFrom: user.pickupPoint,
@@ -67,13 +67,13 @@ export async function GET(req: Request) {
     ]);
     const orders = [...pendingTransport, ...pendingDelivery];
     return NextResponse.json(orders);
-  } else if (kind === 'pending-transport') {
+  } else if (status === 'pending-transport') {
     const orders = await actions.getOrders({
       pickupFrom: user.pickupPoint,
       status: 2
     });
     return NextResponse.json(orders);
-  } else if (kind === 'pending-delivery') {
+  } else if (status === 'pending-delivery') {
     const orders = await actions.getOrders({
       pickupTo: user.pickupPoint,
       status: 8
@@ -131,7 +131,7 @@ export async function POST(req: Request) {
   }
   try {
     await actions.createOrder(orderData);
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
     return NextResponse.json(
       { error: 'Internal server error' },

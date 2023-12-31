@@ -41,34 +41,34 @@ function formatData(data: OrderExtended2): OrderInfo {
 export async function fetchOrders(tab?: Tab) {
   // noStore();
   // console.log(tab);
-  const result = await fetch(`http://localhost:3000/api/shipper/orders?${tab ? `status=${tab}` : ''}`);
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/shipper/orders?${tab ? `status=${tab}` : ''}`);
   if (result.status !== 200) throw new Error(await result.json());
   return (await result.json() as OrderExtended2[]).map(formatData);
 }
 
 export async function acceptOrder(id: number) {
-  const result = await fetch(`http://localhost:3000/api/shipper/orders/${id}/accept`, {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/shipper/orders/${id}/accept`, {
     method: 'POST'
   });
-  if (result.status === 200) {
+  if (Math.floor(result.status / 100) === 2) {
     return true;
   } else throw new Error(await result.json());
 }
 
 export async function confirmOrder(id: number) {
-  const result = await fetch(`http://localhost:3000/api/shipper/orders/${id}/confirm`, {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/shipper/orders/${id}/confirm`, {
     method: 'POST'
   });
-  if (result.status === 200) {
+  if (Math.floor(result.status / 100) === 2) {
     return true;
   } else throw new Error(await result.json());
 }
 
 export async function cancelOrder(id: number) {
-  const result = await fetch(`http://localhost:3000/api/shipper/orders/${id}/cancel`, {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/shipper/orders/${id}/cancel`, {
     method: 'POST'
   });
-  if (result.status === 200) {
+  if (Math.floor(result.status / 100) === 2) {
     return true;
   } else throw new Error(JSON.stringify(await result.json()));
 }

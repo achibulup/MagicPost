@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react'
-import Table from '@/app/ui/pickupstaff/table'
-import Skeleton from '@/app/ui/pickupstaff/skeletons'
+import Table from '@/app/ui/hubstaff/table'
+import Skeleton from '@/app/ui/hubstaff/skeletons'
 import { lusitana } from '@/app/ui/common/fonts';
 import Search from '@/app/ui/common/search';
 

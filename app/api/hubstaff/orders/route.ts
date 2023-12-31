@@ -12,21 +12,21 @@ export async function GET(req: Request) {
     );
   }
   const url = new URL(req.url!);
-  const kind = url.searchParams.get('kind'); 
-  if (kind && !['incoming', 'outgoing'].includes(kind)) {
+  const status = url.searchParams.get('status'); 
+  if (status && !['incoming', 'outgoing'].includes(status)) {
     return NextResponse.json(
-      { error: 'Invalid kind' },
+      { error: 'Invalid status' },
       { status: 400 }
     );
   }
-  if (!kind) {
+  if (!status) {
     const orders = await actions.getOrdersByHub(user.transitHub);
     return NextResponse.json(orders);
-  } else if (kind === 'incoming') {
-    const orders = await actions.getOrdersByHub(user.transitHub, kind);
+  } else if (status === 'incoming') {
+    const orders = await actions.getOrdersByHub(user.transitHub, status);
     return NextResponse.json(orders);
-  } else if (kind === 'outgoing') {
-    const orders = await actions.getOrdersByHub(user.transitHub, kind);
+  } else if (status === 'outgoing') {
+    const orders = await actions.getOrdersByHub(user.transitHub, status);
     return NextResponse.json(orders);
   }
 }
