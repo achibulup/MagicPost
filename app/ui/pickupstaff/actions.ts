@@ -53,13 +53,13 @@ export async function fetchOrders(tab?: Tab) {
       tab === 'transported' ? 'pending-delivery' :
       tab === 'incoming' ? 'incoming' : '';
 
-  const result = await fetch(`http://localhost:3000/api/pickupstaff/orders?${status ? `status=${status}` : ''}`);
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pickupstaff/orders?${status ? `status=${status}` : ''}`);
   if (result.status !== 200) throw new Error(await result.json());
   return (await result.json() as OrderExtended2[]).map(formatData);
 }
 
 export async function checkinOrder(id: number) {
-  const result = await fetch(`http://localhost:3000/api/pickupstaff/orders/${id}/checkin`, {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pickupstaff/orders/${id}/checkin`, {
     method: 'POST'
   });
   if (Math.floor(result.status / 100) === 2) {
@@ -68,7 +68,7 @@ export async function checkinOrder(id: number) {
 }
 
 export async function checkoutTransportOrder(id: number) {
-  const result = await fetch(`http://localhost:3000/api/pickupstaff/orders/${id}/transportcheckout`, {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pickupstaff/orders/${id}/transportcheckout`, {
     method: 'POST'
   });
   if (Math.floor(result.status / 100) === 2) {
@@ -77,7 +77,7 @@ export async function checkoutTransportOrder(id: number) {
 }
 
 export async function checkoutDeliveryOrder(id: number) {
-  const result = await fetch(`http://localhost:3000/api/pickupstaff/orders/${id}/deliverycheckout`, {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pickupstaff/orders/${id}/deliverycheckout`, {
     method: 'POST'
   });
   if (Math.floor(result.status / 100) === 2) {
@@ -86,7 +86,7 @@ export async function checkoutDeliveryOrder(id: number) {
 }
 
 export async function createOrder(postform: FormData) {
-  const result = await fetch(`http://localhost:3000/api/pickupstaff/orders`, {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pickupstaff/orders`, {
     method: 'POST',
     body: postform
   });

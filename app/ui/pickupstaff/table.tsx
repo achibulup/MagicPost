@@ -18,6 +18,7 @@ export default function Table({ tab }: { tab?: Tab }) {
   const skeleton = <Skeleton columns={columnTitles} nbuttons={1} />;
   const [orders, setOrders] = useState<OrderInfo[] | null>(null);
   const [dep, revalidate] = useReducer((x) => x + 1, 0);
+  const rerender = useRerender();
   useEffect(() => {
     (async()=>{
       setOrders(null);
@@ -30,15 +31,13 @@ export default function Table({ tab }: { tab?: Tab }) {
   const handleCheckin = (order: OrderInfo) => {
     checkinOrder(order.id).then((result) => {
       if (result) {
-        if (order.statusNumber === 7) {
+        if (tab === 'incoming') {
+          orders?.splice(orders.indexOf(order), 1);
+          rerender();
+        } else {
           order.statusNumber = 8;
           order.status = 'Transported';
-          const newOrders = filterOrders(orders!, tab);
-          order.status = 'Delivering';
-          console.log(newOrders);
-          setOrders(newOrders);
-        } else {
-          revalidate();
+          rerender();
         }
       }
     });
@@ -46,18 +45,16 @@ export default function Table({ tab }: { tab?: Tab }) {
   const handleTransportCheckout = (order: OrderInfo) => {
     checkoutTransportOrder(order.id).then((result) => {
       if (result) {
-        revalidate();
+        orders?.splice(orders.indexOf(order), 1);
+        rerender();
       }
     });
   }
   const handleDeliveryCheckout = (order: OrderInfo) => {
     checkoutDeliveryOrder(order.id).then((result) => {
       if (result) {
-        order.status = 'Ready';
-        order.statusNumber = 9;
-        const newOrders = filterOrders(orders!, tab);
-        console.log(newOrders);
-        setOrders(newOrders);
+        orders?.splice(orders.indexOf(order), 1);
+        rerender();
       }
     });
   }
@@ -78,6 +75,16 @@ export default function Table({ tab }: { tab?: Tab }) {
                 <div className="mb-2 flex items-center">
                   <div className="flex items-center gap-3">
                     <p>{order.id}</p>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">
+                  Sender
+                </p>
+                <div className="mb-2 flex items-center">
+                  <div className="flex items-center gap-3">
+                    <p>{order.sender}</p>
                   </div>
                 </div>
               </div>
