@@ -34,7 +34,7 @@ export async function POST(req: Request) {
     }
     try {
       await actions.createAccount(data);
-      return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true }, { status: 201 });
     } catch (err) {
       return NextResponse.json({ error: 'some error occurred' }, { status: 400 });
     }

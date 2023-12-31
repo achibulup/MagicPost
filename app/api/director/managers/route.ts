@@ -82,7 +82,7 @@ export async function POST(req: Request) {
       pickupPoint: pickup ? Number(pickup) : null,
       transitHub: transit ? Number(transit) : null
     } as AccountData);
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
     return NextResponse.json(
       { error: 'Internal server error' }, 

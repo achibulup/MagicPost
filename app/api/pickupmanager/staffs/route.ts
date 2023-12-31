@@ -77,7 +77,7 @@ export async function POST(req: Request) {
       pickupPoint: user.pickupPoint,
       transitHub: null,
     });
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {
     return NextResponse.json(
       { error: 'Internal server error' }, 
