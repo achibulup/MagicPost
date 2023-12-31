@@ -9,8 +9,21 @@ export default async function Layout({ children }: { children: React.ReactNode }
   if (!session) {
     redirect('/login');
   }
-  if (session?.role !== 'customer') {
-    redirect(`/home/${session?.role}`);
+  if (session.role !== 'customer') {
+    console.log(session);
+    if (session.role === 'staff' || session.role === 'manager') {
+      if (session.pickupPoint == null) {
+        redirect('/home/hubstaff');
+      } else {
+        redirect('/home/pickupstaff');
+      }
+    }
+    if (session.role === 'shipper') {
+      redirect('/home/shipper');
+    }
+    if (session.role === 'director') {
+      redirect('/home/director');
+    }
   }
   return (
     <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
