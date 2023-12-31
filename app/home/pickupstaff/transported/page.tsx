@@ -11,7 +11,7 @@ export default function Page() {
         Orders
       </h1>
       <Search placeholder="Search orders..." />
-      <Table tab="incoming"/>
+      <Table tab="transported"/>
     </div>
   )
 }
