@@ -1,7 +1,6 @@
 import { unstable_noStore as noStore } from 'next/cache'
 // import { fetchWithCookies } from '@/lib/frontend/serverside';
 import type { OrderExtended2 } from '@/lib/backend/database/actions';
-import type { OrderPostData } from '@/app/api/pickupstaff/orders/route';
 
 type OrderInfo = {
   id: number;
@@ -54,7 +53,7 @@ export async function fetchOrders(tab?: Tab) {
       tab === 'incoming' ? 'incoming' : '';
 
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pickupstaff/orders?${status ? `status=${status}` : ''}`);
-  if (result.status !== 200) throw new Error(await result.json());
+  if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
   return (await result.json() as OrderExtended2[]).map(formatData);
 }
 

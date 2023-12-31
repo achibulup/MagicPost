@@ -251,7 +251,7 @@ export async function getOrderById(id: number) {
   `.then((res) => (res.rows[0] && reformatOrder(res.rows[0])) as OrderExtended | undefined);
 }
 
-export async function getOrders(filter: OrderFilter) : Promise<Order[] | (OrderExtended)[]> {
+export async function getOrders(filter: OrderFilter = {}) : Promise<Order[] | (OrderExtended)[]> {
   const { id, sender, receiverNumber, receiverAddress, hub, hubFrom, hubTo, pickup, pickupFrom, pickupTo, shipper, status } = filter;
   const doFilterId = id !== undefined ? 1 : 0;
   const doFilterSender = sender !== undefined ? 1 : 0;
