@@ -13,7 +13,7 @@ type ManagerForm = {
 
 export async function GET(req: Request) {
   const user = await getUserProfile(req);
-  if (!user || user.role !== 'director') {
+  if (!user || user.role !== 'admin') {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const user = await getUserProfile(req);
-  if (!user || user.role !== 'director') {
+  if (!user || user.role !== 'admin') {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }

@@ -4,7 +4,7 @@ export default async function AggregationPage() {
   return (
     <p>
       This page shows some aggregations about 
-      the company for the director
+      the company for the admin
     </p>
   )
 }

@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(req: Request, { params }: { params: { managerId: string }}) {
   const user = await getUserProfile(req);
-  if (!user || user.role !== 'director') {
+  if (!user || user.role !== 'admin') {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }

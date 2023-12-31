@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getUserProfile } from '@/lib/backend/auth/session';
 import * as actions from '@/lib/backend/database/actions';
-import type { AccountData } from '@/lib/backend/database/definitions';
+import type { AccountData, PickupPoint, TransitHub } from '@/lib/backend/database/definitions';
 
+export type PickupPointInfo = {kind: 'pickup', incoming: number, outgoing: number} & PickupPoint;
+export type TransitHubInfo = {kind: 'hub', incoming: number, outgoing: number} & TransitHub;
+export type Hubs = { pickupPoints: PickupPointInfo[], transitHubs: TransitHubInfo[] }
 
 export async function GET(req: Request) {
   const user = await getUserProfile(req);
-  if (!user || user.role !== 'director') {
+  if (!user || user.role !== 'admin') {
     return NextResponse.json(
       { error: 'Unauthorized' },
       { status: 401 }

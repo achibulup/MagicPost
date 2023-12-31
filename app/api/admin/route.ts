@@ -43,7 +43,7 @@ type ManagerForm = {
 //       email,
 //       password,
 //       phone,
-//       role: 'director'
+//       role: 'admin'
 //     });
 //     return NextResponse.json({ success: true });
 //   } catch (err) {
