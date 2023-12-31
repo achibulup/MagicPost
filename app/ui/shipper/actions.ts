@@ -50,7 +50,7 @@ export async function acceptOrder(id: number) {
   const result = await fetch(`http://localhost:3000/api/shipper/orders/${id}/accept`, {
     method: 'POST'
   });
-  if (result.status === 200) {
+  if (Math.floor(result.status / 100) === 2) {
     return true;
   } else throw new Error(await result.json());
 }
@@ -59,7 +59,7 @@ export async function confirmOrder(id: number) {
   const result = await fetch(`http://localhost:3000/api/shipper/orders/${id}/confirm`, {
     method: 'POST'
   });
-  if (result.status === 200) {
+  if (Math.floor(result.status / 100) === 2) {
     return true;
   } else throw new Error(await result.json());
 }
@@ -68,7 +68,7 @@ export async function cancelOrder(id: number) {
   const result = await fetch(`http://localhost:3000/api/shipper/orders/${id}/cancel`, {
     method: 'POST'
   });
-  if (result.status === 200) {
+  if (Math.floor(result.status / 100) === 2) {
     return true;
   } else throw new Error(JSON.stringify(await result.json()));
 }
