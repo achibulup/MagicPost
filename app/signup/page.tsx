@@ -1,15 +1,20 @@
-import React from 'react'
-import Link from 'next/link'
+import React from 'react';
+import SignupForm from '../ui/signup/signup-form';
+import { getUserProfile } from '@/lib/backend/auth/session';
+import { redirect } from 'next/navigation';
+import LoginForm from "@/app/ui/login/login-form";
 
-export default function page() {
-  // TODO: stub
-  return (
-    <div>signup
-      <form>
-        <input type="text" placeholder="username" />
-        <input type="password" placeholder="password" />
-        <Link href="/login">Signup</Link>
-      </form>
-    </div>
-  )
+export default async function page() {
+    const session = await getUserProfile();
+    if (session) {
+        redirect('/home');
+    }
+    return (
+        <main className="flex items-center justify-center min-h-screen bg-gray-50">
+            <div
+                className="relative mx-auto flex w-full max-w-[850px] flex-col space-y-2.5 p-8 bg-white rounded-2xl shadow-lg">
+                <SignupForm/>
+            </div>
+        </main>
+    )
 }
