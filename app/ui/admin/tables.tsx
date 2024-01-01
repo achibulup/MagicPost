@@ -1,8 +1,8 @@
 'use client';
 
 import { ReactNode, useEffect, useReducer, useState } from 'react';
-import { fetchEmployees, fetchFacilities, fetchOrders } from './actions';
-import type { OrderInfo } from './actions';
+import { fetchEmployees, fetchFacilities, fetchOrders } from '@/lib/frontend/actions/admin';
+import type { OrderInfo } from '@/lib/frontend/actions/admin';
 import { BasicTable, BasicDesktopTable } from '../common/table';
 import Skeleton from './skeletons';
 import { BasicButton } from '../common/buttons';

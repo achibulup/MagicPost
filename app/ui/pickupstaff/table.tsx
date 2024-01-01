@@ -1,12 +1,12 @@
 'use client';
 
 import { ReactNode, useEffect, useReducer, useState } from 'react';
-import { OrderInfo, fetchOrders, checkinOrder, checkoutDeliveryOrder, checkoutTransportOrder} from './actions';
+import { OrderInfo, fetchOrders, checkinOrder, checkoutDeliveryOrder, checkoutTransportOrder} from '@/lib/frontend/actions/pickupstaff';
 import { BasicTable, BasicDesktopTable } from '../common/table';
 import Skeleton from './skeletons';
-import type { Tab } from './actions';
+import type { Tab } from '@/lib/frontend/actions/pickupstaff';
 import { BasicButton } from '../common/buttons';
-import { EditIcon, DeleteIcon, DeliveringIcon, DeliveredIcon, OrdersIcon } from '../common/icons';
+import { OutgoingIcon, DeleteIcon, DeliveringIcon, DeliveredIcon, OrdersIcon } from '../common/icons';
 import { useRerender } from '../common/hooks';
 
 export const revalidate = 1;

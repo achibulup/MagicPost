@@ -1,10 +1,10 @@
 'use client';
 
 import { ReactNode, useEffect, useReducer, useState } from 'react';
-import { OrderInfo, acceptOrder, cancelOrder, confirmOrder, fetchOrders } from './actions';
+import { OrderInfo, acceptOrder, cancelOrder, confirmOrder, fetchOrders } from '@/lib/frontend/actions/shipper';
 import { BasicTable, BasicDesktopTable } from '../common/table';
 import Skeleton from './skeletons';
-import type { Tab } from './actions';
+import type { Tab } from '@/lib/frontend/actions/shipper';
 import { BasicButton } from '../common/buttons';
 import { EditIcon, DeleteIcon, DeliveringIcon, DeliveredIcon } from '../common/icons';
 import { useRerender } from '../common/hooks';
