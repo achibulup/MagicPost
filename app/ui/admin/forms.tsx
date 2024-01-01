@@ -6,29 +6,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Input from '../common/Input';
 import { useFormValidator } from '../common/hooks';
-import { optional, email, minLength, phone, required } from '@/lib/validation';
-
-type Errors = {
-  server?: string;
-  email?: string;
-  name?: string;
-  phone?: string;
-  facility?: string;
-}
-
-interface InputProps {
-  label: string;
-  id: string;
-  name: string;
-  type: string;
-  defaultValue: string;
-  step?: string;
-  placeholder: string;
-  className: string;
-  error?: string;
-  required?: any;
-}
-
+import { optional, email, phone, required } from '@/lib/validation';
 
 export function EditEmployeeForm({ className, employeeId }: { 
   className?: string,
@@ -105,7 +83,7 @@ export function EditEmployeeForm({ className, employeeId }: {
         <div aria-live="polite" aria-atomic="true">
           {serverError && 
             <p className="mt-2 text-sm text-red-500">
-                            {typeof serverError === "object" ? (serverError as any).error : JSON.stringify(serverError)}
+                            {typeof serverError === "object" ? (serverError as any).error : serverError}
             </p>
           }
         </div>
@@ -200,7 +178,7 @@ export function CreateEmployeeForm() {
         <div aria-live="polite" aria-atomic="true">
           {serverError && 
             <p className="mt-2 text-sm text-red-500">
-                            {typeof serverError === "object" ? (serverError as any).error : JSON.stringify(serverError)}
+                            {typeof serverError === "object" ? (serverError as any).error : serverError}
             </p>
           }
         </div>

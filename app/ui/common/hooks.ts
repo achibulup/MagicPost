@@ -17,3 +17,26 @@ export function useFormValidator<T extends FormValidator>(validator: T) {
     }
   ] as const;
 }
+
+type Action = (form: FormData) => void | Promise<void>;
+
+export function useForm<T extends FormValidator>(validator: T, action: Action) {
+  const [errors, validate] = useFormValidator(validator);
+  const [serverError, setServerError] = useState<string | undefined>();
+  const [loading, setLoading] = useState(false);
+  const submit = (form: FormData) => {
+    (async () => {
+      setServerError(undefined);
+      if (!validate(form)) return;
+      setLoading(true);
+      try {
+        await action(form);
+      } catch (err: any) {
+        setServerError(err.message ?? err.error)
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }
+  return { errors, serverError, loading, submit } as const;
+}

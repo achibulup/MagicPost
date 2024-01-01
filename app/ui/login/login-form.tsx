@@ -7,17 +7,19 @@ import { Button } from '@/app/ui/common/buttons';
 import { ArrowRightIcon } from '@heroicons/react/20/solid';
 import Image from 'next/image';
 import Input from '../common/Input';
-import { useFormValidator } from '../common/hooks';
+import { useForm } from '../common/hooks';
 import { email, minLength, required } from '@/lib/validation';
 
 export default function LoginForm() {
-  const [error, validate] = useFormValidator({
-    email: email,
-    password: minLength(6),
-  });
-  const [serverError, setServerError] = useState<string | undefined>(undefined);
-  const [pending, setPending] = useState(false);
   const router = useRouter();
+  const { errors, serverError, loading, submit } = useForm({
+    email: email,
+    password: minLength(6)
+  }, async (form) => {
+    const res = await login(form);
+    if (!res) throw new Error('Server Error');
+    router.refresh();
+  });
 
   const handleSignupRedirect = () => {
     router.push('/signup');
@@ -28,19 +30,7 @@ export default function LoginForm() {
       <div className="md:w-1/2 px-8 md:px-16">
         <h2 className="font-bold text-2xl ">Login</h2>
 
-        <form action={(form) => {
-          setServerError(undefined);
-          if (!validate(form)) return;
-          setPending(true);
-          login(form).then((result) => {
-            if (result.error) {
-              setServerError(result.error);
-            } else {
-              router.refresh();
-            }
-            setPending(false);
-          });
-        }} className="flex flex-col gap-0">
+        <form action={submit} className="flex flex-col gap-0">
           <Input 
             className="p-2 mb-0 rounded-xl border text-sm border-none" 
             id="email"
@@ -49,7 +39,7 @@ export default function LoginForm() {
             name="email" 
             placeholder="Enter your email address"
             required
-            error={error.email}
+            error={errors.email}
           />
           <Input 
             className="p-2 rounded-xl border w-full text-sm border-none" 
@@ -60,9 +50,9 @@ export default function LoginForm() {
             placeholder="Enter password" 
             minLength={6} 
             required
-            error={error.password}
+            error={errors.password}
           />
-          <LoginButton pending={[console.log('passing', pending) as any, pending][1]}/>
+          <LoginButton loading={[console.log('passing', loading) as any, loading][1]}/>
         </form>
 
         <div className="mt-3 text-xs flex justify-between items-center ">
@@ -74,7 +64,7 @@ export default function LoginForm() {
           {serverError && 
           <p className="mt-2 text-sm text-red-500">
             {typeof serverError === "object" ? (serverError as any).error 
-            : JSON.stringify(serverError)}
+            : serverError}
           </p>
           }
         </div>
@@ -87,10 +77,10 @@ export default function LoginForm() {
   );
 }
 
-function LoginButton({ pending }: { pending: boolean}) {
-  console.log('receiving', pending);
+function LoginButton({ loading }: { loading: boolean}) {
+  console.log('receiving', loading);
   return (
-    <Button className="mt-4 w-full" aria-disabled={pending} disabled={pending || false}>
+    <Button className="mt-4 w-full" aria-disabled={loading} disabled={loading || false}>
       Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
     </Button>
   );

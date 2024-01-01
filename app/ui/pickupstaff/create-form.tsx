@@ -1,58 +1,33 @@
 'use client';
 
 import { Button } from '@/app/ui/common/buttons';
-import { createOrder } from '@/app/ui/pickupstaff/actions';
+import { createOrder } from '@/lib/frontend/actions/pickupstaff';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
-type Errors = {
-  server?: string;
-  sender?: string;
-  weight?: string;
-  receiverAddress?: string;
-  receiverNumber?: string;
-  pickupTo?: string;
-  charge?: string;
-}
-
-interface InputProps {
-  label: string;
-  id: string;
-  name: string;
-  type: string;
-  defaultValue: string;
-  step?: string;
-  placeholder: string;
-  className: string;
-  error?: string;
-}
-
+import Input from '../common/Input';
+import { useForm } from '../common/hooks';
+import { email, nonNegative, phone, required } from '@/lib/validation';
 
 export default function CreateOrderForm() {
-  const [error, setError] = useState<Errors>({});
-  const [pending, setPending] = useState(false);
   const router = useRouter();
-
-  const formhandler = (form: FormData) => {
-    setPending(true);
-    createOrder(form).then((res) => {
-      if (res) {
-        window.print();
-        router.push('/home/pickupstaff/pending');
-      } else {
-        setError({ server: 'Server Error' });
-        setPending(false);
-      }
-    }).catch((err) => {
-      setError({ server: err.message ?? err.error });
-      setPending(false);
-    });
-  }
+  const { errors, serverError, loading, submit } = useForm({
+    sender: email,
+    weight: nonNegative,
+    receiverAddress: required,
+    receiverNumber: phone,
+    pickupTo: required,
+    charge: nonNegative,
+  }, async (form) => {
+    const res = await createOrder(form);
+    if (!res) throw new Error('Server Error');
+    window.print();
+    router.push('/home/pickupstaff/pending');
+  });
 
   return (
     <>
-      <form action={formhandler} className='mt-4 print:hidden'>
+      <form action={submit} className='mt-4 print:hidden'>
         <div className="rounded-md bg-gray-50 p-4 md:p-6">
           <Input 
             label="Email"
@@ -62,7 +37,8 @@ export default function CreateOrderForm() {
             defaultValue=""
             placeholder="Email"
             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            error={error.sender}
+            error={errors.sender}
+            required
           />
           <Input 
             label="Weight"
@@ -72,7 +48,8 @@ export default function CreateOrderForm() {
             defaultValue=""
             placeholder="Weight"
             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            error={error.weight}
+            error={errors.weight}
+            required
           />
           <Input 
             label="Receiver Address"
@@ -82,7 +59,8 @@ export default function CreateOrderForm() {
             defaultValue=""
             placeholder="Receiver Address"
             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            error={error.receiverAddress}
+            error={errors.receiverAddress}
+            required
           />
           <Input 
             label="Receiver Phone"
@@ -92,7 +70,8 @@ export default function CreateOrderForm() {
             defaultValue=""
             placeholder="Receiver Phone"
             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            error={error.receiverNumber}
+            error={errors.receiverNumber}
+            required
           />
           <Input 
             label="Destination Pickup Point"
@@ -102,7 +81,8 @@ export default function CreateOrderForm() {
             defaultValue=""
             placeholder="Destination Pickup Point"
             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            error={error.pickupTo}
+            error={errors.pickupTo}
+            required
           />
           <Input 
             label="Charge"
@@ -112,7 +92,8 @@ export default function CreateOrderForm() {
             defaultValue=""
             placeholder="Charge"
             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-            error={error.charge}
+            error={errors.charge}
+            required
           />
         </div>
 
@@ -123,12 +104,12 @@ export default function CreateOrderForm() {
           >
             Cancel
           </button>
-          <Button type="submit" disabled={pending}>Create Order</Button>
+          <Button type="submit" disabled={loading}>Create Order</Button>
         </div>
         <div aria-live="polite" aria-atomic="true">
-          {error.server && 
+          {serverError && 
             <p className="mt-2 text-sm text-red-500">
-                            {typeof error.server === "object" ? (error.server as any).error : JSON.stringify(error.server)}
+                            {typeof serverError === "object" ? (serverError as any).error : serverError}
             </p>
           }
         </div>
@@ -138,47 +119,6 @@ export default function CreateOrderForm() {
   );
 }
 
-
-const Input: React.FC<InputProps> = ({
-  label,
-  id,
-  name,
-  type,
-  defaultValue,
-  step,
-  placeholder,
-  className,
-  error,
-}) => {
-  return (
-    <div className='mb-4'>
-      <label htmlFor={id} className="block text-sm font-medium">
-        {label}
-      </label>
-      <div className="relative mt-2 rounded-md">
-        <div className="relative">
-          <input
-            id={id}
-            name={name}
-            type={type}
-            defaultValue={defaultValue}
-            step={step}
-            placeholder={placeholder}
-            className={'p-3 ' + className}
-          />
-        </div>
-      </div>
-
-      <div aria-live="polite" aria-atomic="true">
-        {error && 
-          <p className="mt-2 text-sm text-red-500">
-            {error}
-          </p>
-        }
-      </div>
-    </div>
-  );
-};
 
 function InvoiceForPrint(props: {}) {
   return <Image src="/invoice.jpg" width={1000} height={1414} alt="invoice" className="fixed top-0 left-0 hidden print:block" />;
