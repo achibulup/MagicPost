@@ -25,7 +25,7 @@ export function MobileRowSkeleton() {
   );
 }
 
-export default function Skeleton({ columns, nbuttons = 0} : {
+export default function Skeleton({ columns, nbuttons} : {
   columns: string[],
   nbuttons?: number
 }) {

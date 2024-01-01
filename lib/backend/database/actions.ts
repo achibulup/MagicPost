@@ -290,7 +290,7 @@ export async function getOrders(filter: OrderFilter = {}) : Promise<Order[] | (O
   const doFilterPickupTo = pickupTo !== undefined ? 1 : 0;
   const doFilterShipper = shipper !== undefined ? 1 : 0;
   const doFilterStatus = status !== undefined ? 1 : 0;
-  console.log(doFilterId, doFilterSender, doFilterReceiverNumber, doFilterReceiverAddress, doFilterHub, doFilterHubFrom, doFilterHubTo, doFilterPickup, doFilterPickupFrom, doFilterPickupTo, doFilterShipper, doFilterStatus);
+  // console.log(doFilterId, doFilterSender, doFilterReceiverNumber, doFilterReceiverAddress, doFilterHub, doFilterHubFrom, doFilterHubTo, doFilterPickup, doFilterPickupFrom, doFilterPickupTo, doFilterShipper, doFilterStatus);
   if (doFilterHub) {
     return sql<OrderExtended>`
       SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
@@ -484,8 +484,8 @@ export async function getCancelledOrders(customer: number) {
 export async function getOrdersByHub(hub: number, kind?: 'incoming' | 'outgoing') {
   const acceptIncoming = (kind === 'incoming' || !kind) ? 1 : 0;
   const acceptOutgoing = (kind === 'outgoing' || !kind) ? 1 : 0;
-  console.log(hub)
-  console.log(acceptIncoming, acceptOutgoing);
+  // console.log(hub)
+  // console.log(acceptIncoming, acceptOutgoing);
   return sql<OrderExtended>`
     SELECT o.*, s."name" as "senderName", pp1."hub" as "hubFrom", pp2."hub" as "hubTo", pp1."name" as "pickupFromName", pp2."name" as "pickupToName", h1."name" as "hubFromName", h2."name" as "hubToName" 
     FROM "orders" o
@@ -541,7 +541,7 @@ export async function createTransitHub({ name, location }: TransitHubData) {
   return sql`
     INSERT INTO "transitHubs" ("name", "location")
     VALUES (${name}, ${location})
-  `.then(async () => console.log(await getTransitHubByName(name)));
+  `;
 }
 
 export async function getIncomingOrdersByHub(hub: number) {
@@ -573,7 +573,7 @@ export async function getTransitHubById(id: number) {
 }
 
 export async function getTransitHubByName(name: string) {
-  console.log('getTransitHubByName', name);
+  // console.log('getTransitHubByName', name);
   return sql<TransitHub>`
     SELECT * FROM "transitHubs" WHERE "name" = ${name}
   `.then((res) => res.rows[0]);

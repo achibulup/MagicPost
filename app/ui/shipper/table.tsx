@@ -12,12 +12,12 @@ import { useRerender } from '../common/hooks';
 export const revalidate = 1;
 
 export default function ShippersTable({ tab }: { tab?: Tab }) {
-  console.log('ShippersTable');
+  // console.log('ShippersTable');
   const columnTitles = ['Address', 'Send date', 'Status'];
   if (!tab || ['ready', 'delivering'].includes(tab)) columnTitles.push('Action');
   const skeleton = <Skeleton 
     columns={columnTitles} 
-    nbuttons={!tab || tab === 'delivering' ? 2 : tab === 'ready' ? 1 : 0}
+    nbuttons={!tab || tab === 'delivering' ? 2 : tab === 'ready' ? 1 : undefined}
   />;
   const [orders, setOrders] = useState<OrderInfo[] | null>(null);
   const rerender = useRerender();
@@ -35,7 +35,7 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
       if (result) {
         order.status = 'Delivering';
         const newOrders = filterOrders(orders!, tab);
-        console.log(newOrders);
+        // console.log(newOrders);
         setOrders(newOrders);
       }
     });
@@ -45,7 +45,7 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
       if (result) {
         order.status = 'Delivered';
         const newOrders = filterOrders(orders!, tab);
-        console.log(newOrders);
+        // console.log(newOrders);
         setOrders(newOrders);
       }
     });
@@ -55,7 +55,7 @@ export default function ShippersTable({ tab }: { tab?: Tab }) {
       if (result) {
         order.status = 'Cancelled';
         const newOrders = filterOrders(orders!, tab);
-        console.log(newOrders);
+        // console.log(newOrders);
         setOrders(newOrders);
       }
     });

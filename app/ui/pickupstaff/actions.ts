@@ -63,7 +63,7 @@ export async function checkinOrder(id: number) {
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }
 
 export async function checkoutTransportOrder(id: number) {
@@ -72,7 +72,7 @@ export async function checkoutTransportOrder(id: number) {
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }
 
 export async function checkoutDeliveryOrder(id: number) {
@@ -81,7 +81,7 @@ export async function checkoutDeliveryOrder(id: number) {
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }
 
 export async function createOrder(postform: FormData) {
@@ -91,5 +91,5 @@ export async function createOrder(postform: FormData) {
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }

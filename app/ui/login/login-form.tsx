@@ -27,10 +27,10 @@ export default function LoginForm() {
   //   };
   // }, []);
 
-  console.log('rendering', pending);
+  // console.log('rendering', pending);
   return (
     <form action={(form) => {
-      console.log('push');
+      // console.log('push');
       setPending(true);
       login(form).then((result) => {
         if (result.error) {
@@ -38,7 +38,7 @@ export default function LoginForm() {
         } else {
           router.refresh();
         }
-        console.log('pop');
+        // console.log('pop');
         setPending(false);
       });
     }} className="space-y-3">
@@ -110,7 +110,7 @@ export default function LoginForm() {
 }
 
 function LoginButton({ pending }: { pending: boolean}) {
-  console.log('receiving', pending);
+  // console.log('receiving', pending);
   return (
     <Button className="mt-4 w-full" aria-disabled={pending} disabled={pending || false}>
       Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />

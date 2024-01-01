@@ -57,7 +57,7 @@ export async function checkinOrder(id: number) {
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }
 
 export async function checkoutOrder(id: number) {
@@ -66,5 +66,5 @@ export async function checkoutOrder(id: number) {
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }

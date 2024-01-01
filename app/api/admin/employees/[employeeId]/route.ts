@@ -27,7 +27,7 @@ export async function GET(req: Request, { params }: { params: { managerId: strin
   return NextResponse.json(managerInfo);
 }
 
-export async function PATCH(req: Request, { params }: { params: { staffId: string }}) {
+export async function PATCH(req: Request, { params }: { params: { employeeId: string }}) {
   const user = await getUserProfile(req);
   if (!user || user.role !== 'admin') {
     return NextResponse.json(
@@ -47,8 +47,8 @@ export async function PATCH(req: Request, { params }: { params: { staffId: strin
   for (const [key, value] of formdata.entries()) {
     jsonObject[key] = value;
   }
-  const { name, email, phone, role } = jsonObject;
-  const staff = await actions.getAccountById(Number(params.staffId));
+  const { name, email, phone } = jsonObject;
+  const staff = await actions.getAccountById(Number(params.employeeId));
   if (!staff || staff.transitHub !== user.transitHub) {
     return NextResponse.json(
       { error: 'Staff not found' },
@@ -65,11 +65,10 @@ export async function PATCH(req: Request, { params }: { params: { staffId: strin
     }
   }
   try {
-    await actions.updateAccount(Number(params.staffId), {
-      name,
-      email,
-      phone,
-      role
+    await actions.updateAccount(Number(params.employeeId), {
+      name: name ? name : undefined,
+      email: email ? email : undefined,
+      phone: phone ? phone : undefined
     });
     return NextResponse.json({ success: true });
   } catch (err) {

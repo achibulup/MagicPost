@@ -89,7 +89,7 @@ export function EmployeeTable() {
   // console.log(employees);
 
   const redirectToEditForm = (employeeId: number) => {
-    router.push(`/admin/employees/${employeeId}/edit`);
+    router.push(`/home/admin/employees/${employeeId}/edit`);
   }
 
   return (employees == null ? skeleton :

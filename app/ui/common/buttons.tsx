@@ -25,7 +25,7 @@ export function Button<T extends React.ComponentProps<"button">>({ children, cla
 }
 
 
-export function FormButton({ href, children }: { href: string; children: React.ReactNode }) {
+export function AddButton({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link
       href={href}

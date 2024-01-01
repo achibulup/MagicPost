@@ -37,13 +37,13 @@ export default function CreateOrderForm() {
     setPending(true);
     createOrder(form).then((res) => {
       if (res) {
-        router.push('/home/pickupstaff/');
+        router.push('/home/pickupstaff/pending');
       } else {
         setError({ server: 'Server Error' });
         setPending(false);
       }
     }).catch((err) => {
-      setError({ server: err });
+      setError({ server: err.message ?? err.error });
       setPending(false);
     });
   }
@@ -120,7 +120,14 @@ export default function CreateOrderForm() {
         >
           Cancel
         </button>
-        <Button type="submit" disabled={pending}>Edit Invoice</Button>
+        <Button type="submit" disabled={pending}>Create Order</Button>
+      </div>
+      <div aria-live="polite" aria-atomic="true">
+        {error.server && 
+          <p className="mt-2 text-sm text-red-500">
+                          {typeof error.server === "object" ? (error.server as any).error : JSON.stringify(error.server)}
+          </p>
+        }
       </div>
     </form>
   );

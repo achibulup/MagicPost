@@ -43,7 +43,7 @@ export async function fetchOrders() {
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/orders`);
   if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
   const data = await result.json() as OrderExtended2[];
-  console.log(JSON.stringify(data, null, 2));
+  // console.log(JSON.stringify(data, null, 2));
   return data.map(formatData);
 }
 
@@ -53,14 +53,24 @@ export async function fetchEmployees() {
   return await result.json() as AccountExtended[];
 }
 
+export async function createEmployee(postform: FormData) {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/employees`, {
+    method: 'POST',
+    body: postform
+  });
+  if (Math.floor(result.status / 100) === 2) {
+    return true;
+  } else throw new Error((await result.json()).error);
+}
+
 export async function changeEmployee(employeeId: number, postform: FormData) {
-  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/driector/orders/${employeeId}`, {
+  const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/employees/${employeeId}`, {
     method: 'PATCH',
     body: postform
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }
 
 export async function fetchFacilities() {

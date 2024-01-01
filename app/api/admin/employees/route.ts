@@ -7,8 +7,7 @@ type ManagerForm = {
   name: string;
   email: string;
   phone: string;
-  pickup?: string;
-  transit?: string;
+  facility: string;
 };
 
 export async function GET(req: Request) {
@@ -45,23 +44,25 @@ export async function POST(req: Request) {
   for (const [key, value] of formdata.entries()) {
     jsonObject[key] = value;
   }
-  const { name, email, phone, pickup, transit } = jsonObject as ManagerForm;
+  const { name, email, phone, facility } = jsonObject as ManagerForm;
   if (!name || !email || !phone) {
     return NextResponse.json(
       { error: 'Invalid data' },
       { status: 400 }
     );
   }
+  const pickup = (await actions.getPickupPointByName(facility))?.id;
+  const transit = (await actions.getTransitHubByName(facility))?.id;
   if (!pickup && !transit) {
     return NextResponse.json(
-      { error: 'Invalid pickup point or transit hub' },
+      { error: 'Invalid facility' },
       { status: 400 }
     );
   }
   if (pickup && transit) {
     return NextResponse.json(
-      { error: 'Invalid pickup point or transit hub' },
-      { status: 400 }
+      { error: 'Internal server error' },
+      { status: 500 }
     );
   }
   const check = await actions.getAccountByEmail(email);
