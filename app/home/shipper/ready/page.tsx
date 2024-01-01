@@ -10,7 +10,7 @@ export default function ShipperPage() {
       <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
         Orders
       </h1>
-      <Search placeholder="Search orders..." />
+      <Search placeholder="Search ..." />
       <Table tab="ready"/>
     </div>
   )

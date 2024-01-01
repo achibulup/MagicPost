@@ -10,10 +10,8 @@ export default async function CustomerPage() {
       <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
         Delivered orders
       </h1>
-      <Search placeholder="Search orders..." />
-      <Suspense fallback={<Skeleton columns={["Address", "Send date", "Status", "Charge"]}/>}>
-        <Table tab="delivered"/>
-      </Suspense>
+      <Search placeholder="Search ..." />
+      <Table tab="delivered"/>
     </div>
   )
 }

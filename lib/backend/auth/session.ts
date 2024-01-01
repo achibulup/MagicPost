@@ -16,7 +16,7 @@ export type Session = {
   pickupPoint?: null;
   transitHub: number;
 } |{
-  role: "customer" | "director";
+  role: "customer" | "admin";
   pickupPoint?: null;
   transitHub?: null;
 });

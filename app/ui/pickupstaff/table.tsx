@@ -167,19 +167,3 @@ export default function Table({ tab }: { tab?: Tab }) {
     </BasicTable>
   );
 }
-
-function filterOrders(orders: OrderInfo[], tab?: Tab) {
-  if (!tab) return orders.filter((order) => (
-    [2, 7, 8].includes(order.statusNumber)
-  ));
-  if (tab === 'incoming') return orders.filter((order) => (
-    order.statusNumber === 7
-  ));
-  if (tab === 'transported') return orders.filter((order) => (
-    order.statusNumber === 8
-  ));
-  if (tab === 'pending') return orders.filter((order) => (
-    order.statusNumber === 2
-  ));
-  throw new Error('Invalid tab');
-}

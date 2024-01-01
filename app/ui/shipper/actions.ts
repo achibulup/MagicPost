@@ -42,7 +42,7 @@ export async function fetchOrders(tab?: Tab) {
   // noStore();
   // console.log(tab);
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/shipper/orders?${tab ? `status=${tab}` : ''}`);
-  if (result.status !== 200) throw new Error(await result.json());
+  if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
   return (await result.json() as OrderExtended2[]).map(formatData);
 }
 
@@ -52,7 +52,7 @@ export async function acceptOrder(id: number) {
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }
 
 export async function confirmOrder(id: number) {
@@ -61,7 +61,7 @@ export async function confirmOrder(id: number) {
   });
   if (Math.floor(result.status / 100) === 2) {
     return true;
-  } else throw new Error(await result.json());
+  } else throw new Error((await result.json()).error);
 }
 
 export async function cancelOrder(id: number) {

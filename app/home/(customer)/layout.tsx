@@ -10,19 +10,26 @@ export default async function Layout({ children }: { children: React.ReactNode }
     redirect('/login');
   }
   if (session.role !== 'customer') {
-    console.log(session);
-    if (session.role === 'staff' || session.role === 'manager') {
+    // console.log(session);
+    if (session.role === 'staff') {
       if (session.pickupPoint == null) {
         redirect('/home/hubstaff');
       } else {
         redirect('/home/pickupstaff');
       }
     }
+    if (session.role === 'manager') {
+      if (session.pickupPoint == null) {
+        redirect('/home/hubmanager');
+      } else {
+        redirect('/home/pickupmanager');
+      }
+    }
     if (session.role === 'shipper') {
       redirect('/home/shipper');
     }
-    if (session.role === 'director') {
-      redirect('/home/director');
+    if (session.role === 'admin') {
+      redirect('/home/admin');
     }
   }
   return (

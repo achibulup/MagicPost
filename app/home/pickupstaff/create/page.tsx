@@ -7,9 +7,9 @@ export default function Page() {
   return (
     <div className="w-full">
       <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
-        Orders
+        Create Order
       </h1>
-      <Search placeholder="Search orders..." />
+      <Search placeholder="Search ..." />
       <Form></Form>
     </div>
   )

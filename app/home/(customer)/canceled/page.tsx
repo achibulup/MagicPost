@@ -10,7 +10,7 @@ export default async function CustomerPage() {
       <h1 className={`${lusitana.className} mb-8 text-xl md:text-2xl`}>
         Cancelled orders
       </h1>
-      <Search placeholder="Search orders..." />
+      <Search placeholder="Search ..." />
       <Suspense fallback={<Skeleton columns={["Address", "Send date", "Status", "Charge"]}/>}>
         <Table tab="cancelled"/>
       </Suspense>

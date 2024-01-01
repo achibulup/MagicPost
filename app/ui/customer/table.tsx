@@ -8,8 +8,8 @@ import type { Tab } from './actions';
 
 export const revalidate = 1;
 
-export default function CustomersTable({ tab }: { tab?: Tab }) {
-  const columnTitles = ['Address', 'Send date', 'Status', 'Charge'];
+export default function Table({ tab }: { tab?: Tab }) {
+  const columnTitles = ['Address', 'Send date', 'Status', 'Invoice'];
   const skeleton = <Skeleton columns={columnTitles} />;
   const [orders, setOrders] = useState<OrderInfo[] | null>(null);
   useEffect(() => {
@@ -50,7 +50,7 @@ export default function CustomersTable({ tab }: { tab?: Tab }) {
                 <p className="font-medium">{order.status}</p>
               </div>
               <div className="flex w-1/2 flex-col">
-                <p className="text-xs">Charge</p>
+                <p className="text-xs">Invoice</p>
                 <p className="font-medium">{order.charge}</p>
               </div>
             </div>
