@@ -4,6 +4,7 @@ import { Button } from '@/app/ui/common/buttons';
 import { createOrder } from '@/app/ui/pickupstaff/actions';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 type Errors = {
   server?: string;
@@ -37,6 +38,7 @@ export default function CreateOrderForm() {
     setPending(true);
     createOrder(form).then((res) => {
       if (res) {
+        window.print();
         router.push('/home/pickupstaff/pending');
       } else {
         setError({ server: 'Server Error' });
@@ -49,87 +51,90 @@ export default function CreateOrderForm() {
   }
 
   return (
-    <form action={formhandler} className='mt-4'>
-      <div className="rounded-md bg-gray-50 p-4 md:p-6">
-        <Input 
-          label="Email"
-          id="sender"
-          name="sender"
-          type="email"
-          defaultValue=""
-          placeholder="Email"
-          className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          error={error.sender}
-        />
-        <Input 
-          label="Weight"
-          id="weight"
-          name="weight"
-          type="number"
-          defaultValue=""
-          placeholder="Weight"
-          className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          error={error.weight}
-        />
-        <Input 
-          label="Receiver Address"
-          id="receiverAddress"
-          name="receiverAddress"
-          type="text"
-          defaultValue=""
-          placeholder="Receiver Address"
-          className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          error={error.receiverAddress}
-        />
-        <Input 
-          label="Receiver Phone"
-          id="receiverNumber"
-          name="receiverNumber"
-          type="text"
-          defaultValue=""
-          placeholder="Receiver Phone"
-          className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          error={error.receiverNumber}
-        />
-        <Input 
-          label="Destination Pickup Point"
-          id="pickupTo"
-          name="pickupTo"
-          type="text"
-          defaultValue=""
-          placeholder="Destination Pickup Point"
-          className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          error={error.pickupTo}
-        />
-        <Input 
-          label="Charge"
-          id="charge"
-          name="charge"
-          type="number"
-          defaultValue=""
-          placeholder="Charge"
-          className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          error={error.charge}
-        />
-      </div>
+    <>
+      <form action={formhandler} className='mt-4 print:hidden'>
+        <div className="rounded-md bg-gray-50 p-4 md:p-6">
+          <Input 
+            label="Email"
+            id="sender"
+            name="sender"
+            type="email"
+            defaultValue=""
+            placeholder="Email"
+            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            error={error.sender}
+          />
+          <Input 
+            label="Weight"
+            id="weight"
+            name="weight"
+            type="number"
+            defaultValue=""
+            placeholder="Weight"
+            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            error={error.weight}
+          />
+          <Input 
+            label="Receiver Address"
+            id="receiverAddress"
+            name="receiverAddress"
+            type="text"
+            defaultValue=""
+            placeholder="Receiver Address"
+            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            error={error.receiverAddress}
+          />
+          <Input 
+            label="Receiver Phone"
+            id="receiverNumber"
+            name="receiverNumber"
+            type="text"
+            defaultValue=""
+            placeholder="Receiver Phone"
+            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            error={error.receiverNumber}
+          />
+          <Input 
+            label="Destination Pickup Point"
+            id="pickupTo"
+            name="pickupTo"
+            type="text"
+            defaultValue=""
+            placeholder="Destination Pickup Point"
+            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            error={error.pickupTo}
+          />
+          <Input 
+            label="Charge"
+            id="charge"
+            name="charge"
+            type="number"
+            defaultValue=""
+            placeholder="Charge"
+            className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            error={error.charge}
+          />
+        </div>
 
-      <div className="mt-6 flex justify-end gap-4">
-        <button 
-          onClick={router.back}
-          className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
-        >
-          Cancel
-        </button>
-        <Button type="submit" disabled={pending}>Create Order</Button>
-      </div>
-      <div aria-live="polite" aria-atomic="true">
-        {error.server && 
-          <p className="mt-2 text-sm text-red-500">
-                          {typeof error.server === "object" ? (error.server as any).error : JSON.stringify(error.server)}
-          </p>
-        }
-      </div>
-    </form>
+        <div className="mt-6 flex justify-end gap-4">
+          <button 
+            onClick={router.back}
+            className="flex h-10 items-center rounded-lg bg-gray-100 px-4 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-200"
+          >
+            Cancel
+          </button>
+          <Button type="submit" disabled={pending}>Create Order</Button>
+        </div>
+        <div aria-live="polite" aria-atomic="true">
+          {error.server && 
+            <p className="mt-2 text-sm text-red-500">
+                            {typeof error.server === "object" ? (error.server as any).error : JSON.stringify(error.server)}
+            </p>
+          }
+        </div>
+      </form>
+      <InvoiceForPrint/>
+    </>
   );
 }
 
@@ -174,3 +179,7 @@ const Input: React.FC<InputProps> = ({
     </div>
   );
 };
+
+function InvoiceForPrint(props: {}) {
+  return <Image src="/invoice.jpg" width={1000} height={1414} alt="invoice" className="fixed top-0 left-0 hidden print:block" />;
+}
