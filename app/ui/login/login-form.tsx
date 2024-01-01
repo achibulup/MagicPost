@@ -32,7 +32,7 @@ export default function LoginForm() {
 
         <form action={submit} className="flex flex-col gap-0">
           <Input 
-            className="p-2 mb-0 rounded-xl border text-sm border-none" 
+            className="mt-4 mb-0 rounded-xl text-sm" 
             id="email"
             label="Email"
             type="email" 
@@ -42,7 +42,7 @@ export default function LoginForm() {
             error={errors.email}
           />
           <Input 
-            className="p-2 rounded-xl border w-full text-sm border-none" 
+            className="rounded-xl w-full text-sm" 
             id="password"
             label="Password"
             type="password" 
