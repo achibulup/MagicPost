@@ -2,7 +2,7 @@
   "accounts": [
     {
       "email": "admin@example.com",
-      "password": "dir",
+      "password": "adminnmh",
       "name": "Nguyễn Mai Hiếu",
       "phone": "0988888888",
       "role": "admin"
