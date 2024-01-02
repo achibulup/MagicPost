@@ -1,13 +1,12 @@
 'use client'
 
-import { useReducer } from 'react';
-
 export async function login(form: FormData) {
   const result = await fetch('/api/auth/login', {
     method: 'POST',
     body: form
   });
   // console.log("?");
+  if (Math.floor(result.status / 100) !== 2) throw new Error((await result.json()).error);
   return result.json();
 }
 

@@ -1,6 +1,6 @@
 'use client';
 
-import {login} from '@/lib/frontend/clientside';
+import {login} from '@/lib/frontend/actions/auth';
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 import { Button } from '@/app/ui/common/buttons';
@@ -17,9 +17,11 @@ export default function LoginForm() {
     password: minLength(6)
   }, async (form) => {
     const res = await login(form);
+    console.log(res);
     if (!res) throw new Error('Server Error');
     router.refresh();
   });
+  console.log(serverError);
 
   const handleSignupRedirect = () => {
     router.push('/signup');

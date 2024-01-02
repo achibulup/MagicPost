@@ -32,7 +32,8 @@ export function useForm<T extends FormValidator>(validator: T, action: Action) {
       try {
         await action(form);
       } catch (err: any) {
-        setServerError(err.message ?? err.error)
+        console.log(err);
+        setServerError(err.message ?? err.error ?? err)
       } finally {
         setLoading(false);
       }

@@ -40,7 +40,7 @@ function formatData(data: OrderExtended2): OrderInfo {
 
 export async function fetchOrders() {
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pickupmanager/orders`);
-  if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
+  if (Math.floor(result.status / 100) !== 2) throw new Error((await result.json()).error);
   const data = await result.json() as OrderExtended2[];
   // console.log(JSON.stringify(data, null, 2));
   return data.map(formatData);
@@ -48,7 +48,7 @@ export async function fetchOrders() {
 
 export async function fetchEmployees() {
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/pickupmanager/employees`);
-  if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
+  if (Math.floor(result.status / 100) !== 2) throw new Error((await result.json()).error);
   return await result.json() as AccountExtended[];
 }
 

@@ -22,7 +22,7 @@
 2. Thiết lập database
  - Tạo một project mới bất kỳ trên vercel 
  - Tạo một [database mới](https://vercel.com/docs/storage/vercel-postgres/quickstart) trên Vercel (lưu ý là phải tạo một project trước).
- - Khởi tạo dữ liệu cho database: Lấy url của database vừa được tạo: dùng lệnh `psql <url> -f <dump_file>` với dump_file là file backup đã được cho trong repo.
+ - Khởi tạo dữ liệu cho database: Lấy url của database vừa được tạo, dùng lệnh `psql <url> -f <dump_file>` với dump_file là file backup đã được cho trong repo.
 3. Thiết lập môi trường (mẫu từ file .env.example)
  - Sao chép file môi trường `.env.local` từ database mới tạo vào file .env.local trong folder repo.
  - Tạo một chuỗi ngẫu nhiên làm khóa cho JSON Web Token, lưu vào biến `JWT_SECRET` trong file `.env.local`.

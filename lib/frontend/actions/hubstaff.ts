@@ -47,7 +47,7 @@ function formatData(data: OrderExtended2): OrderInfo {
 export async function fetchOrders(tab?: Tab) {
   const status = tab === 'pending' ? 'outgoing' : tab;
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/hubstaff/orders?${status ? `status=${status}` : ''}`);
-  if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
+  if (Math.floor(result.status / 100) !== 2) throw new Error((await result.json()).error);
   return (await result.json() as OrderExtended2[]).map(formatData);
 }
 

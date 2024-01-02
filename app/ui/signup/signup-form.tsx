@@ -1,6 +1,6 @@
 'use client';
 
-import { signup } from '@/lib/frontend/clientside';
+import { signup } from '@/lib/frontend/actions/auth';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/app/ui/common/buttons';

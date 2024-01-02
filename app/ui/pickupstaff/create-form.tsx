@@ -47,6 +47,7 @@ export default function CreateOrderForm() {
             type="number"
             defaultValue=""
             placeholder="Weight"
+            step='0.01'
             className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             error={errors.weight}
             required

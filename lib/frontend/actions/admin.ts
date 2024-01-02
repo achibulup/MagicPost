@@ -41,7 +41,7 @@ function formatData(data: OrderExtended2): OrderInfo {
 
 export async function fetchOrders() {
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/orders`);
-  if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
+  if (Math.floor(result.status / 100) !== 2) throw new Error((await result.json()).error);
   const data = await result.json() as OrderExtended2[];
   // console.log(JSON.stringify(data, null, 2));
   return data.map(formatData);
@@ -49,7 +49,7 @@ export async function fetchOrders() {
 
 export async function fetchEmployees() {
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/employees`);
-  if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
+  if (Math.floor(result.status / 100) !== 2) throw new Error((await result.json()).error);
   return await result.json() as AccountExtended[];
 }
 
@@ -75,6 +75,6 @@ export async function changeEmployee(employeeId: number, postform: FormData) {
 
 export async function fetchFacilities() {
   const result = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/facilities`);
-  if (Math.floor(result.status / 100) !== 2) throw new Error(await result.json());
+  if (Math.floor(result.status / 100) !== 2) throw new Error((await result.json()).error);
   return await result.json() as Facilities;
 }

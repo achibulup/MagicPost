@@ -14,7 +14,7 @@ import type { AccountExtended } from '@/lib/backend/database/actions';
 export const revalidate = 1;
 
 export function EmployeeTable() {
-  const columnTitles = ['Customer', 'Email', 'Phone', 'Role', 'Action'];
+  const columnTitles = ['Employee', 'Email', 'Phone', 'Role', 'Action'];
   const skeleton = <Skeleton columns={columnTitles} nbuttons={1} />;
   const [employees, setEmployees] = useState<AccountExtended[] | null>(null);
   const [dep, revalidate] = useReducer((x) => x + 1, 0);

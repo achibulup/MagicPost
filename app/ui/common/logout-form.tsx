@@ -1,7 +1,7 @@
 // import React from 'react';
 'use client'
 import { PowerIcon } from '@heroicons/react/24/outline';
-import { logout } from '@/lib/frontend/clientside';
+import { logout } from '@/lib/frontend/actions/auth';
 import { useRouter } from 'next/navigation';
 
 const LogoutForm = () => {

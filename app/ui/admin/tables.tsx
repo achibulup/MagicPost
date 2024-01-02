@@ -73,7 +73,7 @@ export function FacilityTable() {
 }
 
 export function EmployeeTable() {
-  const columnTitles = ['Customer', 'At', 'Email', 'Phone', 'Action'];
+  const columnTitles = ['Employee', 'At', 'Email', 'Phone', 'Action'];
   const skeleton = <Skeleton columns={columnTitles} nbuttons={1} />;
   const [employees, setEmployees] = useState<AccountExtended[] | null>(null);
   const [dep, revalidate] = useReducer((x) => x + 1, 0);
